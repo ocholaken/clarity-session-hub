@@ -5,65 +5,65 @@
 
 @layer base {
   :root {
-    --background: 252 100% 99%;
-    --foreground: 240 10% 15%;
+    --background: 0 0% 96%; /* #F5F5F5 Light Gray/Off-white */
+    --foreground: 0 0% 20%; /* #333333 Charcoal Gray */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card-foreground: 0 0% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 0 0% 20%;
 
-    --primary: 255 79% 75%;
+    --primary: 210 70% 59%; /* #4A90E2 Soft Blue */
     --primary-foreground: 255 0% 100%;
 
-    --secondary: 199 89% 48%;
+    --secondary: 164 74% 60%; /* #50E3C2 Teal/Aqua */
     --secondary-foreground: 255 0% 100%;
 
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
 
-    --accent: 30 100% 94%;
-    --accent-foreground: 240 6% 10%;
+    --accent: 6 94% 69%; /* #FF6F61 Warm Peach/Coral */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 252 79% 75%;
+    --ring: 210 70% 59%;
 
     --radius: 0.75rem;
   }
 
   .dark {
     --background: 240 10% 10%;
-    --foreground: 210 40% 98%;
+    --foreground: 0 0% 96%;
 
     --card: 240 10% 12%;
-    --card-foreground: 210 40% 98%;
+    --card-foreground: 0 0% 96%;
 
     --popover: 240 10% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 255 79% 75%;
+    --primary: 210 70% 59%; /* #4A90E2 Soft Blue */
     --primary-foreground: 255 0% 100%;
 
-    --secondary: 199 89% 48%;
+    --secondary: 164 74% 60%; /* #50E3C2 Teal/Aqua */
     --secondary-foreground: 255 0% 100%;
 
     --muted: 240 5% 20%;
     --muted-foreground: 240 5% 65%;
 
-    --accent: 30 100% 94%;
-    --accent-foreground: 240 6% 10%;
+    --accent: 6 94% 69%; /* #FF6F61 Warm Peach/Coral */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 240 6% 20%;
     --input: 240 6% 20%;
-    --ring: 252 79% 75%;
+    --ring: 210 70% 59%;
   }
 }
 
@@ -84,10 +84,10 @@
 
 @layer components {
   .subtle-gradient {
-    background: linear-gradient(135deg, rgba(229, 222, 255, 0.2) 0%, rgba(255, 222, 229, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%);
   }
 
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(155, 135, 245, 0.05) 0%, rgba(253, 225, 211, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.05) 0%, rgba(255, 111, 97, 0.1) 100%);
   }
 }

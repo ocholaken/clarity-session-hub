@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,7 +62,47 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors
+				// Custom colors mapped to our palette
+				softBlue: {
+					DEFAULT: '#4A90E2',
+					50: '#EBF3FC',
+					100: '#D6E7F8',
+					200: '#ADD0F1',
+					300: '#85B8EA',
+					400: '#5CA1E3',
+					500: '#4A90E2', // Primary color
+					600: '#1F77D6',
+					700: '#185CAA',
+					800: '#12447F',
+					900: '#0C2C53',
+				},
+				teal: {
+					DEFAULT: '#50E3C2',
+					50: '#E6FBF6',
+					100: '#CDF7ED',
+					200: '#9AEFDC',
+					300: '#67E7CB',
+					400: '#50E3C2', // Secondary color
+					500: '#24D9AE',
+					600: '#1BAB89',
+					700: '#147D64',
+					800: '#0D4E3F',
+					900: '#06201A',
+				},
+				coral: {
+					DEFAULT: '#FF6F61',
+					50: '#FFF1F0',
+					100: '#FFE4E1',
+					200: '#FFC9C3',
+					300: '#FFAEA5',
+					400: '#FF9183',
+					500: '#FF6F61', // Accent/CTA color
+					600: '#FF3A27',
+					700: '#EC1400',
+					800: '#B41000',
+					900: '#7C0B00',
+				},
+				// Keep existing colors
 				lavender: {
 					100: '#e5deff',
 					200: '#d6bcfa',
@@ -74,10 +113,6 @@ export default {
 					700: '#6E59A5',
 					800: '#553c9a',
 					900: '#1A1F2C',
-				},
-				teal: {
-					400: '#33C3F0',
-					500: '#0EA5E9',
 				},
 				peach: {
 					100: '#FEF7CD',

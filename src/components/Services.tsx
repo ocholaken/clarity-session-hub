@@ -6,37 +6,37 @@ const services = [
   {
     title: "Individual Counseling",
     description: "One-on-one sessions focused on personal growth, mental health, and overcoming challenges.",
-    icon: <Heart className="h-10 w-10 text-lavender-500" />,
-    color: "bg-soft-pink",
+    icon: <Heart className="h-10 w-10 text-softBlue-500" />,
+    color: "bg-softBlue-50",
   },
   {
     title: "Couples Therapy",
     description: "Strengthen relationships, improve communication, and resolve conflicts with professional guidance.",
-    icon: <Users className="h-10 w-10 text-lavender-500" />,
-    color: "bg-soft-blue",
+    icon: <Users className="h-10 w-10 text-softBlue-500" />,
+    color: "bg-teal-50",
   },
   {
     title: "Family Counseling",
     description: "Address family dynamics, improve relationships, and create a healthier home environment.",
-    icon: <Lightbulb className="h-10 w-10 text-lavender-500" />,
+    icon: <Lightbulb className="h-10 w-10 text-softBlue-500" />,
     color: "bg-soft-green",
   },
   {
     title: "Career Guidance",
     description: "Navigate career transitions, set goals, and discover your professional purpose and path.",
-    icon: <Briefcase className="h-10 w-10 text-lavender-500" />,
-    color: "bg-peach-200",
+    icon: <Briefcase className="h-10 w-10 text-softBlue-500" />,
+    color: "bg-coral-100",
   },
   {
     title: "Stress Management",
     description: "Learn practical strategies to manage stress, anxiety, and build resilience in daily life.",
-    icon: <Brain className="h-10 w-10 text-lavender-500" />,
-    color: "bg-lavender-100",
+    icon: <Brain className="h-10 w-10 text-softBlue-500" />,
+    color: "bg-softBlue-100",
   },
   {
     title: "Wellness Coaching",
     description: "Holistic guidance for improving overall wellbeing, habits, and lifestyle balance.",
-    icon: <Moon className="h-10 w-10 text-lavender-500" />,
+    icon: <Moon className="h-10 w-10 text-softBlue-500" />,
     color: "bg-soft-gray",
   },
 ];
@@ -54,7 +54,7 @@ const Services = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
-            <Card key={index} className="overflow-hidden border border-gray-200 hover:border-lavender-400 hover:shadow-md transition-all duration-300">
+            <Card key={index} className="overflow-hidden border border-gray-200 hover:border-softBlue-400 hover:shadow-md transition-all duration-300">
               <CardHeader className={`${service.color} p-6`}>
                 <div className="mb-4">{service.icon}</div>
                 <CardTitle className="text-xl">{service.title}</CardTitle>
