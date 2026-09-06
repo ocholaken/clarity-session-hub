@@ -14,31 +14,56 @@ import NotFound from "./pages/NotFound";
 import Resources from "./pages/Resources";
 import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
-import Admin from "./pages/Admin";
+import { AdminAuthProvider } from "./hooks/useAdminAuth";
+import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminAppointments from "./pages/admin/AdminAppointments";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminServices from "./pages/admin/AdminServices";
+import AdminMessages from "./pages/admin/AdminMessages";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 
 const queryClient = new QueryClient();
 
-// Wrap the app in React.StrictMode to catch issues
 const App = () => (
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/counselors" element={<Counselors />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/book" element={<Book />} />
-            <Route path="/admin" element={<Admin />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AdminAuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/counselors" element={<Counselors />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/book" element={<Book />} />
+
+              {/* Admin area — not linked from the public site */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route element={<ProtectedAdminRoute />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="appointments" element={<AdminAppointments />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="services" element={<AdminServices />} />
+                  <Route path="messages" element={<AdminMessages />} />
+                  <Route path="reports" element={<AdminReports />} />
+                  <Route path="settings" element={<AdminSettingsPage />} />
+                </Route>
+              </Route>
+
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AdminAuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

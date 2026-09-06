@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { LogIn, UserCheck } from "lucide-react";
@@ -40,25 +41,18 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    
-    // Simulate login - replace with actual authentication when connected to backend
-    try {
-      console.log("Login attempt with:", data);
-      // Simulate success for now
-      setTimeout(() => {
-        toast.success("Login successful!", {
-          description: "Welcome back to Clarity Sessions!"
-        });
-        navigate("/");
-      }, 1500);
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Login failed", {
-        description: "Please check your credentials and try again"
-      });
-    } finally {
-      setIsLoading(false);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email.trim(),
+      password: data.password,
+    });
+    setIsLoading(false);
+
+    if (error) {
+      toast.error("Login failed", { description: error.message });
+      return;
     }
+    toast.success("Login successful!", { description: "Welcome back to Clarity Sessions!" });
+    navigate("/");
   };
 
   return (
