@@ -290,6 +290,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      booked_times: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          scheduled_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
