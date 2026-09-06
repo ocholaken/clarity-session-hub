@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { UserPlus } from "lucide-react";
@@ -47,25 +48,24 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    
-    // Simulate registration - replace with actual authentication when connected to backend
-    try {
-      console.log("Registration attempt with:", data);
-      // Simulate success for now
-      setTimeout(() => {
-        toast.success("Account created successfully!", {
-          description: "Welcome to Clarity Sessions!"
-        });
-        navigate("/");
-      }, 1500);
-    } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Registration failed", {
-        description: "Please try again with different credentials"
-      });
-    } finally {
-      setIsLoading(false);
+    const { error } = await supabase.auth.signUp({
+      email: data.email.trim(),
+      password: data.password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: data.name.trim() },
+      },
+    });
+    setIsLoading(false);
+
+    if (error) {
+      toast.error("Registration failed", { description: error.message });
+      return;
     }
+    toast.success("Account created", {
+      description: "Check your email and click the confirmation link to finish signing up.",
+    });
+    navigate("/login");
   };
 
   return (
