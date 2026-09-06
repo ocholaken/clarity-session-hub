@@ -25,6 +25,7 @@ export type Database = {
           notes: string | null
           scheduled_at: string
           service_id: string | null
+          slot_id: string | null
           status: Database["public"]["Enums"]["appointment_status"]
           updated_at: string
           user_id: string | null
@@ -39,6 +40,7 @@ export type Database = {
           notes?: string | null
           scheduled_at: string
           service_id?: string | null
+          slot_id?: string | null
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
           user_id?: string | null
@@ -53,6 +55,7 @@ export type Database = {
           notes?: string | null
           scheduled_at?: string
           service_id?: string | null
+          slot_id?: string | null
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
           user_id?: string | null
@@ -63,6 +66,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
             referencedColumns: ["id"]
           },
         ]
@@ -96,6 +106,62 @@ export type Database = {
           subject?: string | null
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          payer_contact: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_reference: string | null
+          raw_response: Json | null
+          reference: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payer_contact?: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          provider_reference?: string | null
+          raw_response?: Json | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payer_contact?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          provider_reference?: string | null
+          raw_response?: Json | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -157,6 +223,47 @@ export type Database = {
         }
         Relationships: []
       }
+      time_slots: {
+        Row: {
+          counselor_name: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          is_available: boolean
+          service_id: string | null
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          counselor_name?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          service_id?: string | null
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          counselor_name?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_available?: boolean
+          service_id?: string | null
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_slots_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -199,6 +306,13 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "missed"
+      payment_provider: "mpesa" | "stripe"
+      payment_status:
+        | "pending"
+        | "successful"
+        | "failed"
+        | "cancelled"
+        | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -333,6 +447,14 @@ export const Constants = {
         "completed",
         "cancelled",
         "missed",
+      ],
+      payment_provider: ["mpesa", "stripe"],
+      payment_status: [
+        "pending",
+        "successful",
+        "failed",
+        "cancelled",
+        "refunded",
       ],
     },
   },
