@@ -28,3 +28,23 @@
 ## Phase 5 — Visual polish (requested)
 - [ ] Hero: user photo as full-width soft-blurred background with dark overlay, responsive
 - [ ] Reviews section: animated keyword circles (scroll-triggered fade/scale + hover motion)
+
+## Phase 6 — Professional polish brief (requested 7 Sep)
+- [ ] Hero: full-width blurred photo bg + overlay, clear value prop, primary/secondary CTA
+- [ ] Consistent spacing/typography/cards/radius/buttons sitewide
+- [ ] Mobile/tablet/desktop responsiveness pass
+- [ ] Services section: icon, name, description, Book Now, hover animation
+- [ ] "How it works" 4-step section with icons + scroll animation
+- [ ] Reviews: authentic layout + animated keyword circles on scroll
+- [ ] Statistics counting up on scroll
+- [ ] Booking states (available/selected/unavailable/pending/confirmed/cancelled)
+- [ ] Booking review page before payment with edit-back
+- [ ] Payment architecture ready for M-Pesa (no fake confirmations)
+- [ ] Single login with role-based routing (user dashboard vs admin dashboard); drop separate admin login
+- [ ] Admin dashboard cards + charts (users, bookings by status, payments, services, slots)
+- [ ] Sticky responsive navbar with active-page highlight + hamburger
+- [ ] CTAs throughout
+- [ ] Professional footer (links, services, contact, socials, privacy, terms, copyright)
+- [ ] Micro-animations on viewport entry
+- [ ] Accessibility: contrast, focus states, labels, alt text
+- [ ] Final end-to-end test pass
