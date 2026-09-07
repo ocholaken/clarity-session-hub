@@ -2,15 +2,15 @@
 
 ## Phase 1 — Accounts & admin access (in progress)
 - [x] Remove public "Admin" links from header
-- [ ] Wire /admin/login + protected /admin/* routes to real screens
-- [ ] Real sign up / sign in / sign out for users (backend auth)
+- [x] Wire /admin/login + protected /admin/* routes to real screens
+- [x] Real sign up / sign in / sign out for users (backend auth)
 - [ ] Create first administrator account (secure setup)
-- [ ] Delete old demo admin page with hardcoded password
+- [x] Delete old demo admin page with hardcoded password
 
 ## Phase 2 — Booking system
-- [ ] Availability (time slots) storage + double-booking prevention
-- [ ] Real booking flow: service → date → slot → details → confirm → stored
-- [ ] User booking history page
+- [x] Availability (time slots) storage + double-booking prevention
+- [x] Real booking flow: service → date → slot → details → confirm → stored
+- [x] User booking history page
 - [ ] Admin booking management (search, filter, status changes)
 
 ## Phase 3 — Payments
@@ -24,3 +24,27 @@
 - [ ] Button responsiveness, hover/active/disabled, loading + feedback states
 - [ ] Password reset page
 - [ ] Full testing pass (mobile + desktop)
+
+## Phase 5 — Visual polish (requested)
+- [ ] Hero: user photo as full-width soft-blurred background with dark overlay, responsive
+- [ ] Reviews section: animated keyword circles (scroll-triggered fade/scale + hover motion)
+
+## Phase 6 — Professional polish brief (requested 7 Sep)
+- [ ] Hero: full-width blurred photo bg + overlay, clear value prop, primary/secondary CTA
+- [ ] Consistent spacing/typography/cards/radius/buttons sitewide
+- [ ] Mobile/tablet/desktop responsiveness pass
+- [ ] Services section: icon, name, description, Book Now, hover animation
+- [ ] "How it works" 4-step section with icons + scroll animation
+- [ ] Reviews: authentic layout + animated keyword circles on scroll
+- [ ] Statistics counting up on scroll
+- [ ] Booking states (available/selected/unavailable/pending/confirmed/cancelled)
+- [ ] Booking review page before payment with edit-back
+- [ ] Payment architecture ready for M-Pesa (no fake confirmations)
+- [ ] Single login with role-based routing (user dashboard vs admin dashboard); drop separate admin login
+- [ ] Admin dashboard cards + charts (users, bookings by status, payments, services, slots)
+- [ ] Sticky responsive navbar with active-page highlight + hamburger
+- [ ] CTAs throughout
+- [ ] Professional footer (links, services, contact, socials, privacy, terms, copyright)
+- [ ] Micro-animations on viewport entry
+- [ ] Accessibility: contrast, focus states, labels, alt text
+- [ ] Final end-to-end test pass
