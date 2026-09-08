@@ -28,6 +28,7 @@ const Header = () => {
           <Link to="/counselors" className="text-gray-600 hover:text-lavender-600 transition-colors">Counselors</Link>
           <Link to="/resources" className="text-gray-600 hover:text-lavender-600 transition-colors">Resources</Link>
           <Link to="/contact" className="text-gray-600 hover:text-lavender-600 transition-colors">Contact</Link>
+          <Link to="/my-bookings" className="text-gray-600 hover:text-lavender-600 transition-colors">My Bookings</Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
@@ -90,6 +91,13 @@ const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Contact
+            </Link>
+            <Link 
+              to="/my-bookings" 
+              className="py-2 px-4 hover:bg-lavender-100 rounded-md"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              My Bookings
             </Link>
             <div className="flex gap-2 mt-2">
               <Link to="/login" className="flex-1" onClick={() => setIsMenuOpen(false)}>

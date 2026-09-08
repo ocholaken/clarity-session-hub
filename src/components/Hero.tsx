@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { CalendarCheck, ShieldCheck, Clock } from "lucide-react";
+import { Calendar, ShieldCheck, Lock, Clock } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const Hero = () => {
@@ -54,13 +54,16 @@ const Hero = () => {
 
           <dl className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
             {[
-              { icon: CalendarCheck, label: "Same-week appointments" },
-              { icon: ShieldCheck, label: "Private & confidential" },
+              { icon: Calendar, label: "Same-week appointments" },
+              { icon: Lock, label: "Private & confidential" },
               { icon: Clock, label: "Sessions from 50 minutes" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-3 text-gray-100">
-                <Icon className="h-5 w-5 text-lavender-200 shrink-0" aria-hidden="true" />
-                <dt className="text-sm">{label}</dt>
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-lg bg-white/10 backdrop-blur px-4 py-3"
+              >
+                <Icon className="h-5 w-5 text-[#7A9E7E] shrink-0" aria-hidden="true" />
+                <dt className="text-sm font-medium text-gray-100">{label}</dt>
               </div>
             ))}
           </dl>

@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Star } from "lucide-react";
+import ReviewKeywords from "@/components/ReviewKeywords";
 
 const testimonials = [
   {
@@ -39,6 +40,8 @@ const Testimonials = () => {
             Don't just take our word for it. Here's what our clients have to say about their experiences.
           </p>
         </div>
+
+        <ReviewKeywords />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {testimonials.map((testimonial, index) => (

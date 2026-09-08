@@ -11,9 +11,12 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Resources from "./pages/Resources";
 import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
+import MyBookings from "./pages/MyBookings";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -45,6 +48,9 @@ const App = () => (
               <Route path="/counselors" element={<Counselors />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/book" element={<Book />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
 
               {/* Admin area — not linked from the public site */}
               <Route path="/admin/login" element={<AdminLogin />} />
