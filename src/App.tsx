@@ -49,6 +49,8 @@ const App = () => (
               <Route path="/resources" element={<Resources />} />
               <Route path="/book" element={<Book />} />
               <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
 
               {/* Admin area — not linked from the public site */}
               <Route path="/admin/login" element={<AdminLogin />} />
