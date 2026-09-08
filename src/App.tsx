@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Resources from "./pages/Resources";
 import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
+import MyBookings from "./pages/MyBookings";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/counselors" element={<Counselors />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/book" element={<Book />} />
+              <Route path="/my-bookings" element={<MyBookings />} />
 
               {/* Admin area — not linked from the public site */}
               <Route path="/admin/login" element={<AdminLogin />} />

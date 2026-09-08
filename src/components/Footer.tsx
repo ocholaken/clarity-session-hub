@@ -49,7 +49,10 @@ const Footer = () => {
                 <Link to="/resources" className="text-gray-600 hover:text-lavender-600">Resources</Link>
               </li>
               <li>
-                <Link to="/faq" className="text-gray-600 hover:text-lavender-600">FAQ</Link>
+                <Link to="/contact" className="text-gray-600 hover:text-lavender-600">Contact</Link>
+              </li>
+              <li>
+                <Link to="/book" className="text-gray-600 hover:text-lavender-600">Book a Session</Link>
               </li>
             </ul>
           </div>
@@ -58,19 +61,19 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">Our Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/services/individual" className="text-gray-600 hover:text-lavender-600">Individual Counseling</Link>
+                <Link to="/services" className="text-gray-600 hover:text-lavender-600">Individual Counseling</Link>
               </li>
               <li>
-                <Link to="/services/couples" className="text-gray-600 hover:text-lavender-600">Couples Therapy</Link>
+                <Link to="/services" className="text-gray-600 hover:text-lavender-600">Couples Therapy</Link>
               </li>
               <li>
-                <Link to="/services/family" className="text-gray-600 hover:text-lavender-600">Family Counseling</Link>
+                <Link to="/services" className="text-gray-600 hover:text-lavender-600">Family Counseling</Link>
               </li>
               <li>
-                <Link to="/services/career" className="text-gray-600 hover:text-lavender-600">Career Guidance</Link>
+                <Link to="/services" className="text-gray-600 hover:text-lavender-600">Career Guidance</Link>
               </li>
               <li>
-                <Link to="/services/wellness" className="text-gray-600 hover:text-lavender-600">Wellness Coaching</Link>
+                <Link to="/services" className="text-gray-600 hover:text-lavender-600">Wellness Coaching</Link>
               </li>
             </ul>
           </div>
