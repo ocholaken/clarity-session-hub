@@ -11,6 +11,8 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Resources from "./pages/Resources";
 import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
