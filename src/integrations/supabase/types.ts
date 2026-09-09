@@ -77,6 +77,86 @@ export type Database = {
           },
         ]
       }
+      content_bodies: {
+        Row: {
+          body: string | null
+          content_id: string
+          created_at: string
+          file_url: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          body?: string | null
+          content_id: string
+          created_at?: string
+          file_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          body?: string | null
+          content_id?: string
+          created_at?: string
+          file_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_bodies_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: true
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          duration_label: string | null
+          id: string
+          is_premium: boolean
+          is_published: boolean
+          sort_order: number
+          thumbnail_url: string | null
+          title: string
+          type: Database["public"]["Enums"]["content_type"]
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_label?: string | null
+          id?: string
+          is_premium?: boolean
+          is_published?: boolean
+          sort_order?: number
+          thumbnail_url?: string | null
+          title: string
+          type: Database["public"]["Enums"]["content_type"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_label?: string | null
+          id?: string
+          is_premium?: boolean
+          is_published?: boolean
+          sort_order?: number
+          thumbnail_url?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["content_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           created_at: string
@@ -117,9 +197,11 @@ export type Database = {
           payer_contact: string | null
           provider: Database["public"]["Enums"]["payment_provider"]
           provider_reference: string | null
+          purpose: string
           raw_response: Json | null
           reference: string | null
           status: Database["public"]["Enums"]["payment_status"]
+          subscription_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -132,9 +214,11 @@ export type Database = {
           payer_contact?: string | null
           provider: Database["public"]["Enums"]["payment_provider"]
           provider_reference?: string | null
+          purpose?: string
           raw_response?: Json | null
           reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -147,9 +231,11 @@ export type Database = {
           payer_contact?: string | null
           provider?: Database["public"]["Enums"]["payment_provider"]
           provider_reference?: string | null
+          purpose?: string
           raw_response?: Json | null
           reference?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          subscription_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -159,6 +245,13 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -220,6 +313,45 @@ export type Database = {
           name?: string
           price?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          last_receipt: string | null
+          phone: string | null
+          provider: Database["public"]["Enums"]["payment_provider"] | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          last_receipt?: string | null
+          phone?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          last_receipt?: string | null
+          phone?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -296,6 +428,7 @@ export type Database = {
           scheduled_at: string
         }[]
       }
+      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -312,13 +445,20 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "missed"
-      payment_provider: "mpesa" | "stripe"
+      content_type: "video" | "article" | "guide"
+      payment_provider: "mpesa" | "stripe" | "paystack"
       payment_status:
         | "pending"
         | "successful"
         | "failed"
         | "cancelled"
         | "refunded"
+      subscription_status:
+        | "none"
+        | "trialing"
+        | "active"
+        | "expired"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -454,13 +594,21 @@ export const Constants = {
         "cancelled",
         "missed",
       ],
-      payment_provider: ["mpesa", "stripe"],
+      content_type: ["video", "article", "guide"],
+      payment_provider: ["mpesa", "stripe", "paystack"],
       payment_status: [
         "pending",
         "successful",
         "failed",
         "cancelled",
         "refunded",
+      ],
+      subscription_status: [
+        "none",
+        "trialing",
+        "active",
+        "expired",
+        "cancelled",
       ],
     },
   },
