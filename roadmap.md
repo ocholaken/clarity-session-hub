@@ -50,8 +50,8 @@
 - [ ] Final end-to-end test pass
 
 ## Phase 7 - Lucide icon system
-- [ ] Hero: trust badges (ShieldCheck, Calendar, Lock, Clock) #7A9E7E icons / #5A6B7A text
-- [ ] Services: 6 cards, 56px circles bg #E8F0E9, sage icons 28px
-- [ ] Counselors cards: BadgeCheck, Globe, Banknote(KSh), CalendarCheck, specialty pills
-- [ ] Resources: filter icons + card footer icons (Clock, FileText/PlayCircle/BookOpen)
-- [ ] Footer: Phone/WhatsApp, Mail, MapPin, Clock; social circles bg #3A3D4D
+- [x] Hero: trust badges (ShieldCheck, Calendar, Lock, Clock) #7A9E7E icons / #5A6B7A text
+- [x] Services: 6 cards, 56px circles bg #E8F0E9, sage icons 28px
+- [x] Counselors cards: BadgeCheck, Globe, Banknote(KSh), CalendarCheck, specialty pills
+- [x] Resources: filter icons + card footer icons (Clock, FileText/PlayCircle/BookOpen)
+- [x] Footer: Phone/WhatsApp, Mail, MapPin, Clock; social circles bg #3A3D4D
