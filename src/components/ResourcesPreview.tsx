@@ -1,26 +1,26 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Video, Book, ArrowRight } from "lucide-react";
+import { FileText, PlayCircle, BookOpen, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const resources = [
   {
     title: "Understanding Anxiety",
     type: "Article",
-    icon: <FileText className="h-6 w-6 text-lavender-500" />,
+    icon: <FileText className="h-6 w-6 text-[#7A9E7E]" />,
     description: "Learn about the common symptoms, causes, and effective coping strategies for anxiety.",
   },
   {
     title: "Mindfulness Meditation",
     type: "Video",
-    icon: <Video className="h-6 w-6 text-lavender-500" />,
+    icon: <PlayCircle className="h-6 w-6 text-[#7A9E7E]" />,
     description: "A guided 10-minute meditation practice to help reduce stress and increase present-moment awareness.",
   },
   {
     title: "Building Resilience",
     type: "Guide",
-    icon: <Book className="h-6 w-6 text-lavender-500" />,
+    icon: <BookOpen className="h-6 w-6 text-[#7A9E7E]" />,
     description: "Practical techniques to build emotional resilience and bounce back from life's challenges.",
   },
 ];

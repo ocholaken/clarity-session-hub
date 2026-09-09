@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin, Clock, MessageCircle } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -17,18 +17,27 @@ const Footer = () => {
             <p className="text-gray-600 mb-6">
               Professional counseling services to help you navigate life's challenges with clarity and confidence.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-gray-500 hover:text-lavender-500 transition-colors">
-                <Facebook size={20} />
+            <div className="flex gap-3">
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3A3D4D] text-[#7A9E7E] transition-transform duration-200 hover:scale-110"
+              >
+                <Facebook size={18} />
               </a>
-              <a href="#" className="text-gray-500 hover:text-lavender-500 transition-colors">
-                <Instagram size={20} />
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3A3D4D] text-[#7A9E7E] transition-transform duration-200 hover:scale-110"
+              >
+                <Instagram size={18} />
               </a>
-              <a href="#" className="text-gray-500 hover:text-lavender-500 transition-colors">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-gray-500 hover:text-lavender-500 transition-colors">
-                <Linkedin size={20} />
+              <a
+                href="#"
+                aria-label="LinkedIn"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3A3D4D] text-[#7A9E7E] transition-transform duration-200 hover:scale-110"
+              >
+                <Linkedin size={18} />
               </a>
             </div>
           </div>
@@ -82,19 +91,29 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">Contact Us</h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Phone size={18} className="text-lavender-500" />
-                <span className="text-gray-600">+1 (555) 123-4567</span>
+                <Phone size={18} className="text-[#7A9E7E]" />
+                <span className="text-gray-600">+254 769 331 729</span>
+                <a
+                  href="https://wa.me/254769331729"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Chat on WhatsApp"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3A3D4D] text-[#7A9E7E] transition-transform duration-200 hover:scale-110"
+                >
+                  <MessageCircle size={16} />
+                </a>
               </div>
               <div className="flex items-center gap-3">
-                <Mail size={18} className="text-lavender-500" />
+                <Mail size={18} className="text-[#7A9E7E]" />
                 <span className="text-gray-600">contact@claritysessions.com</span>
               </div>
               <div className="flex items-start gap-3">
-                <MapPin size={18} className="text-lavender-500 mt-1" />
-                <span className="text-gray-600">
-                  1234 Mindful Way, <br />
-                  Serenity City, SC 98765
-                </span>
+                <MapPin size={18} className="text-[#7A9E7E] mt-1" />
+                <span className="text-gray-600">Nairobi, Kenya</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock size={18} className="text-[#7A9E7E]" />
+                <span className="text-gray-600">Mon – Sat, 8:00 AM – 6:00 PM</span>
               </div>
             </div>
           </div>
