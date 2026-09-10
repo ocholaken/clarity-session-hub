@@ -157,21 +157,22 @@ const Book = () => {
       return;
     }
 
-    toast.success("Booking received", {
-      description: `Your ${service.name} on ${slot.toLocaleString()} is reserved. We'll confirm shortly.`,
+    toast.success("Booking successful!", {
+      description: `Your ${service.name} on ${slot.toLocaleString()} is reserved.`,
       duration: 6000,
     });
 
     if (userData.user) {
       navigate("/my-bookings");
     } else {
+      toast.message("Create an account to see it in My Bookings", {
+        description: "Sign up with the same email to track your bookings and payments.",
+        duration: 6000,
+      });
       setStep("select");
       setSlot(null);
       setDate(undefined);
       setForm({ name: "", email: "", phone: "", notes: "" });
-      toast.message("Tip: create an account", {
-        description: "Sign up to track your bookings and payments.",
-      });
     }
     void created;
   };
