@@ -36,21 +36,22 @@ const Hero = () => {
             online in under two minutes and get a confirmed time that fits your day.
           </p>
 
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <Button
               asChild
-              className="min-h-[52px] text-base px-8 bg-lavender-500 hover:bg-lavender-600 text-white shadow-lg transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white"
+              className="w-full sm:w-auto min-h-[52px] text-base px-8 bg-lavender-500 hover:bg-lavender-600 text-white shadow-lg transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-white"
             >
               <Link to="/book">Book a Session</Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="min-h-[52px] text-base px-8 border-white/70 bg-white/10 text-white hover:bg-white hover:text-lavender-700 backdrop-blur transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+              className="w-full sm:w-auto min-h-[52px] text-base px-8 border-white/70 bg-white/10 text-white hover:bg-white hover:text-lavender-700 backdrop-blur transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
             >
               <Link to="/services">Learn More</Link>
             </Button>
           </div>
+
 
           <dl className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
             {[

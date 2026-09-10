@@ -14,17 +14,18 @@ const CTA = () => {
                 Take the first step towards mental wellness today. Book your initial consultation and experience the benefits of professional counseling.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/book">
-                  <Button className="text-lg py-6 px-8 bg-lavender-500 hover:bg-lavender-600 text-white">
+                <Link to="/book" className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto min-h-[52px] text-base sm:text-lg px-8 bg-lavender-500 hover:bg-lavender-600 text-white shadow-md transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">
                     Book a Session
                   </Button>
                 </Link>
-                <Link to="/contact">
-                  <Button variant="outline" className="text-lg py-6 px-8 border-lavender-400 text-lavender-600 hover:bg-lavender-100">
+                <Link to="/contact" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto min-h-[52px] text-base sm:text-lg px-8 border-lavender-400 text-lavender-600 hover:bg-lavender-100 transition-transform duration-200 active:scale-[0.98]">
                     Contact Us
                   </Button>
                 </Link>
               </div>
+
             </div>
             <div className="relative h-64 lg:h-auto">
               <div className="absolute inset-0 bg-gradient-to-r from-lavender-400/20 to-transparent z-10"></div>
