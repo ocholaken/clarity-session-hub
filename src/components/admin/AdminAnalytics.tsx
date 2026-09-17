@@ -63,7 +63,7 @@ const mockUserEngagement = [
   { day: "Sun", visits: 90, bookings: 9 }
 ];
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ['#174A4A', '#6F9085', '#C9A227', '#103838', '#B7CDC5'];
 
 const AdminAnalytics = () => {
   const [timeRange, setTimeRange] = useState("month");
@@ -169,8 +169,8 @@ const AdminAnalytics = () => {
                     <Area 
                       type="monotone" 
                       dataKey="appointments" 
-                      stroke="#8884d8" 
-                      fill="#8884d8" 
+                      stroke="#174A4A"
+                      fill="#174A4A"
                       fillOpacity={0.3} 
                       name="Appointments"
                     />
@@ -197,7 +197,7 @@ const AdminAnalytics = () => {
                       labelLine={true}
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       outerRadius={90}
-                      fill="#8884d8"
+                      fill="#174A4A"
                       dataKey="value"
                     >
                       {mockServiceDistribution.map((entry, index) => (
@@ -227,12 +227,12 @@ const AdminAnalytics = () => {
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
-                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                    <YAxis yAxisId="left" orientation="left" stroke="#174A4A" />
                     <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="sessions" name="Sessions" fill="#8884d8" />
-                    <Bar yAxisId="right" dataKey="satisfaction" name="Satisfaction %" fill="#82ca9d" />
+                    <Bar yAxisId="left" dataKey="sessions" name="Sessions" fill="#174A4A" />
+                    <Bar yAxisId="right" dataKey="satisfaction" name="Satisfaction %" fill="#6F9085" />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -257,7 +257,7 @@ const AdminAnalytics = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="visits" name="Site Visits" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="visits" name="Site Visits" stroke="#C9A227" activeDot={{ r: 8 }} />
                     <Line type="monotone" dataKey="bookings" name="Bookings" stroke="#82ca9d" />
                   </LineChart>
                 </ResponsiveContainer>

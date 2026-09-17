@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Star, Calendar, MessageSquare } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { handleBookSession } from "@/lib/booking";
+import kennethImage from "./kenneth.jpg";
+import sarahImage from "../../Sarah Akoth.jpg";
+import anneImage from "../../counselor1.jpg.jpeg";
+import bellaImage from "../../Bela.jpg";
+import paulineImage from "../../Pauline Oyuga.jpg";
 
 const counselors = [
   {
@@ -22,61 +27,61 @@ const counselors = [
     availabilityMessage: "Available next week"
   },
   {
-    name: "Mark Williams, LMFT",
-    title: "Marriage & Family Therapist",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
-    specialties: ["Relationships", "Couples", "Family Dynamics"],
-    description: "With a compassionate approach, Mark helps couples and families rebuild communication and strengthen their bonds through proven therapeutic techniques.",
-    education: "M.S. in Marriage and Family Therapy, UCLA",
-    experience: "8+ years",
+    name: "Pauline Oyuga",
+    title: "Counselor",
+    image: paulineImage,
+    specialties: ["Wellbeing", "Life Transitions", "Supportive Counseling"],
+    description: "Pauline Oyuga is currently working in Sunderland, UK, supporting people with a compassionate and practical approach.",
+    education: "Counseling professional",
+    experience: "7+ years",
     rating: 4.8,
     reviews: 97,
     availabilityMessage: "Available this week"
   },
   {
-    name: "Dr. Amara Patel",
+    name: "Dr. Anne Wagude",
     title: "Counseling Psychologist",
-    image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    image: anneImage,
     specialties: ["Career Development", "Life Transitions", "Stress Management"],
     description: "Dr. Patel blends traditional and modern approaches to help clients navigate major life transitions and professional challenges.",
     education: "Psy.D. in Counseling Psychology, Columbia University",
-    experience: "10+ years",
+    experience: "8+ years",
     rating: 4.7,
     reviews: 86,
     availabilityMessage: "Available tomorrow"
   },
   {
-    name: "James Chen, LPC",
-    title: "Licensed Professional Counselor",
-    image: "https://images.unsplash.com/photo-1542190891-2093d38760f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
-    specialties: ["Addiction Recovery", "Mindfulness", "Men's Issues"],
-    description: "James specializes in addiction recovery and mindfulness-based interventions, helping clients develop healthier coping mechanisms and lifestyle habits.",
-    education: "M.A. in Clinical Mental Health Counseling, NYU",
-    experience: "9+ years",
+    name: "Job Kenneth, LPC",
+    title: "Psychologist, Frontend Developer & AI Architect",
+    image: kennethImage,
+    specialties: ["Psychological Intelligence", "Frontend Engineering", "AI Architecture"],
+    description: "I am a Psychologist by training, a Frontend Developer by craft, and an AI Architect by vision. As Co-Founder of Clarity Session Hub and CEO of Clarity, I build psychologically intelligent, beautifully crafted, human-centered ecosystems where technology understands people.",
+    education: "Psychologist by training",
+    experience: "Co-Founder, Clarity Session Hub | CEO, Clarity",
     rating: 4.9,
     reviews: 112,
     availabilityMessage: "Limited availability"
   },
   {
-    name: "Dr. Lisa Rodriguez",
+    name: "Dr. Bella Linda",
     title: "Child & Adolescent Psychologist",
-    image: "https://images.unsplash.com/photo-1544717305-2782549b5136?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    image: bellaImage,
     specialties: ["Child Development", "ADHD", "School Issues"],
     description: "Dr. Rodriguez has dedicated her career to supporting children, adolescents, and their families through developmental challenges and school-related issues.",
     education: "Ph.D. in Child Psychology, University of Michigan",
-    experience: "15+ years",
+    experience: "4+ years",
     rating: 4.8,
     reviews: 148,
     availabilityMessage: "Available next week"
   },
   {
-    name: "Robert Taylor, LCSW",
-    title: "Licensed Clinical Social Worker",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    name: "Sarah Akoth",
+    title: "Bachelor in Counseling Psychology",
+    image: sarahImage,
     specialties: ["Grief & Loss", "PTSD", "Veterans"],
     description: "Robert provides compassionate support for those dealing with grief, loss, and trauma, with a special focus on veterans and military families.",
     education: "MSW, University of Washington",
-    experience: "11+ years",
+    experience: "3+ years",
     rating: 4.9,
     reviews: 91,
     availabilityMessage: "Available this week"
@@ -114,14 +119,14 @@ const CounselorsPage = () => {
   });
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-10">
       <Header />
       <main className="flex-grow">
-        <section className="py-12 md:py-20 bg-lavender-50">
+        <section className="py-12 md:py-20 bg-muted">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center mb-8">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Counselors</h1>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-muted-foreground">
                 Meet our team of licensed professionals dedicated to supporting your mental health journey.
               </p>
             </div>
@@ -155,53 +160,54 @@ const CounselorsPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
               {filteredCounselors.map((counselor, index) => (
-                <Card key={index} className="overflow-hidden border border-gray-200 h-full flex flex-col">
-                  <div className="h-64 overflow-hidden">
+                <Card key={index} className="flex flex-col h-full w-full overflow-hidden rounded-xl shadow-sm">
+                  <div className="w-full aspect-[4/3] overflow-hidden bg-gray-100">
                     <img 
                       src={counselor.image} 
                       alt={counselor.name} 
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+                      className={`w-full h-full object-cover transition-transform duration-500 ${counselor.name === "Dr. Bella Linda" ? "scale-[1.22] hover:scale-[1.27]" : "hover:scale-105"}`}
+                      style={{ objectPosition: counselor.name === "Dr. Bella Linda" ? "50% 55%" : "50% 0%" }}
                     />
                   </div>
-                  <CardHeader>
-                    <CardTitle className="text-xl">{counselor.name}</CardTitle>
-                    <CardDescription className="text-lavender-600">{counselor.title}</CardDescription>
-                    <div className="flex items-center mt-2 text-amber-500">
-                      <Star className="fill-current h-4 w-4" />
-                      <span className="ml-1 text-sm font-medium">{counselor.rating}</span>
-                      <span className="mx-1 text-gray-400">•</span>
-                      <span className="text-sm text-gray-500">{counselor.reviews} reviews</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="flex gap-2 flex-wrap mb-4">
-                      {counselor.specialties.map((specialty, i) => (
-                        <span key={i} className="bg-lavender-100 text-lavender-700 px-3 py-1 rounded-full text-sm">
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-gray-600 mb-4">{counselor.description}</p>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Education:</span> {counselor.education}</p>
-                      <p><span className="font-medium">Experience:</span> {counselor.experience}</p>
-                      <p className="text-green-600 font-medium mt-4">{counselor.availabilityMessage}</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-                    <Link to="/book" className="w-full">
-                      <Button className="w-full bg-lavender-500 hover:bg-lavender-600 text-white">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Book Session
+                  <div className="flex flex-col flex-1 p-4 md:p-6">
+                    <CardHeader className="p-0">
+                      <CardTitle className="text-xl">{counselor.name}</CardTitle>
+                      <CardDescription className="text-muted-foreground">{counselor.title}</CardDescription>
+                      <div className="flex items-center mt-2 text-amber-500">
+                        <Star className="fill-current h-4 w-4" />
+                        <span className="ml-1 text-sm font-medium">{counselor.rating}</span>
+                        <span className="mx-1 text-gray-400">•</span>
+                        <span className="text-sm text-gray-500">{counselor.reviews} reviews</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-4">
+                      <div className="flex gap-2 flex-wrap mb-4">
+                        {counselor.specialties.map((specialty, i) => (
+                          <span key={i} className="bg-secondary text-secondary-foreground rounded-full px-3 py-1 text-sm">
+                            {specialty}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-muted-foreground mb-4">{counselor.description}</p>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">Education:</span> {counselor.education}</p>
+                        <p><span className="font-medium">Experience:</span> {counselor.experience}</p>
+                        <p className="text-green-600 font-medium mt-4">{counselor.availabilityMessage}</p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="mt-auto flex flex-col sm:flex-row gap-2 md:gap-3 pt-4 px-0 pb-0">
+                      <Button onClick={handleBookSession} className="w-full sm:w-auto flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Book Session
+                        </Button>
+                      <Button variant="outline" className="w-full sm:w-auto flex-1 border-primary text-primary hover:bg-secondary">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Contact
                       </Button>
-                    </Link>
-                    <Button variant="outline" className="w-full border-lavender-400 text-lavender-600 hover:bg-lavender-100">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Contact
-                    </Button>
-                  </CardFooter>
+                    </CardFooter>
+                  </div>
                 </Card>
               ))}
             </div>

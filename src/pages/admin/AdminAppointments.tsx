@@ -22,15 +22,17 @@ import {
 } from "@/components/ui/table";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { supabase } from "@/integrations/supabase/client";
-import { AppointmentStatus, useAppointments, useServices } from "@/hooks/useAdminData";
+import { AppointmentStatus, useAppointments, useBookings, useServices } from "@/hooks/useAdminData";
 
 const statuses: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "missed"];
 
 const AdminAppointments = () => {
   const { data: appointments = [], isLoading } = useAppointments();
+  const { data: bookings = [], isLoading: isLoadingBookings } = useBookings();
   const { data: services = [] } = useServices();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState("");
   const queryClient = useQueryClient();
 
   const serviceName = (id: string | null) => services.find((s) => s.id === id)?.name ?? "—";
@@ -41,6 +43,12 @@ const AdminAppointments = () => {
       .includes(search.toLowerCase());
     const matchesStatus = filter === "all" || a.status === filter;
     return matchesSearch && matchesStatus;
+  });
+
+  const filteredBookings = bookings.filter((b) => {
+    const matchesDate = !dateFilter || b.booking_date === dateFilter;
+    const matchesStatus = filter === "all" || b.status === filter;
+    return matchesDate && matchesStatus;
   });
 
   const updateStatus = async (id: string, status: AppointmentStatus) => {
@@ -57,6 +65,20 @@ const AdminAppointments = () => {
     queryClient.invalidateQueries({ queryKey: ["admin", "appointments"] });
   };
 
+  const updateBookingStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+    if (error) return toast.error("Could not update the booking", { description: error.message });
+    toast.success(`Booking marked ${status}`);
+    queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
+  };
+
+  const removeBooking = async (id: string) => {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) return toast.error("Could not delete the booking", { description: error.message });
+    toast.success("Booking deleted");
+    queryClient.invalidateQueries({ queryKey: ["admin", "bookings"] });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -70,6 +92,12 @@ const AdminAppointments = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-sm"
+        />
+        <Input
+          type="date"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="sm:w-44"
         />
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="sm:w-48">
@@ -142,6 +170,52 @@ const AdminAppointments = () => {
                     No bookings found.
                   </TableCell>
                 </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0 overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User ID</TableHead>
+                <TableHead>Counselor</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredBookings.map((b) => (
+                <TableRow key={b.id}>
+                  <TableCell className="font-mono text-xs">{b.user_id}</TableCell>
+                  <TableCell>{b.counselor_name ?? "General Counselor"}</TableCell>
+                  <TableCell>{b.booking_date}</TableCell>
+                  <TableCell>{b.booking_time}</TableCell>
+                  <TableCell><StatusBadge status={b.status} /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Select value={b.status} onValueChange={(value) => updateBookingStatus(b.id, value)}>
+                        <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {["confirmed", "cancelled", "completed"].map((status) => (
+                            <SelectItem key={status} value={status} className="capitalize">{status}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="icon" onClick={() => removeBooking(b.id)} aria-label="Delete booking">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!isLoadingBookings && filteredBookings.length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-10">No new bookings found.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

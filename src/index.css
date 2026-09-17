@@ -3,71 +3,274 @@
 @tailwind components;
 @tailwind utilities;
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: #cbd5e1;
+}
+
+.chat-scrollbar {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #6f9085 transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid #fefefe;
+  border-radius: 9999px;
+  background: #6f9085;
+}
+
+.hourly-content-enter {
+  animation: hourly-content-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.review-keywords-marquee {
+  animation: review-marquee 32s linear infinite;
+  transition: opacity 0.7s ease;
+}
+
+.review-keyword {
+  animation: float-wave 3s ease-in-out infinite;
+}
+
+@keyframes float-wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+
+@keyframes review-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes hourly-content-enter {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateX(22px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0) scale(1);
+  }
+}
+
+.floating-whatsapp {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  display: inline-flex;
+  width: 60px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: whatsapp-entry 0.6s ease-out both, whatsapp-float 3s ease-in-out 0.6s infinite;
+}
+
+.floating-whatsapp__icon {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  width: 60px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #6d28d9 0%, #4f46e5 100%);
+  box-shadow: 0 10px 30px rgba(109, 40, 217, 0.4);
+  transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.floating-whatsapp:hover .floating-whatsapp__icon,
+.floating-whatsapp:focus-visible .floating-whatsapp__icon {
+  background: #25d366;
+  box-shadow: 0 14px 34px rgba(37, 211, 102, 0.38);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.floating-whatsapp:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.35);
+  outline-offset: 5px;
+}
+
+.floating-whatsapp__ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(109, 40, 217, 0.3);
+  border-radius: 9999px;
+  animation: whatsapp-pulse 2.5s ease-out infinite;
+  pointer-events: none;
+}
+
+.floating-whatsapp__ring--two {
+  animation-delay: 1.25s;
+}
+
+.floating-whatsapp__tooltip {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  width: max-content;
+  transform: translate(8px, -50%);
+  border-radius: 12px;
+  background: #111827;
+  padding: 10px 14px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.floating-whatsapp__tooltip::after {
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%) rotate(45deg);
+  background: #111827;
+  content: "";
+}
+
+.floating-whatsapp:hover .floating-whatsapp__tooltip,
+.floating-whatsapp:focus-visible .floating-whatsapp__tooltip {
+  transform: translate(0, -50%);
+  opacity: 1;
+}
+
+@keyframes whatsapp-entry {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes whatsapp-float {
+  0%, 100% { margin-bottom: 0; }
+  50% { margin-bottom: 5px; }
+}
+
+@keyframes whatsapp-pulse {
+  0% { opacity: 0.7; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.8); }
+}
+
+@media (max-width: 640px) {
+  .floating-whatsapp {
+    right: 24px;
+    bottom: 24px;
+    width: 55px;
+    height: 55px;
+  }
+
+  .floating-whatsapp__icon {
+    width: 55px;
+    height: 55px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-whatsapp,
+  .floating-whatsapp__ring {
+    animation: none;
+  }
+}
+
 @layer base {
   :root {
-    --background: 0 0% 96%; /* #F5F5F5 Light Gray/Off-white */
-    --foreground: 0 0% 20%; /* #333333 Charcoal Gray */
+    --background: 48 27% 96%;
+    --foreground: 180 14% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
+    --card-foreground: 180 14% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 20%;
+    --popover-foreground: 180 14% 17%;
 
-    --primary: 210 70% 59%; /* #4A90E2 Soft Blue */
-    --primary-foreground: 255 0% 100%;
+    --primary: 180 52% 19%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 164 74% 60%; /* #50E3C2 Teal/Aqua */
-    --secondary-foreground: 255 0% 100%;
+    --secondary: 157 22% 92%;
+    --secondary-foreground: 180 52% 19%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 48 27% 96%;
+    --muted-foreground: 180 7% 42%;
 
-    --accent: 6 94% 69%; /* #FF6F61 Warm Peach/Coral */
-    --accent-foreground: 0 0% 100%;
+    --accent: 47 68% 90%;
+    --accent-foreground: 180 52% 19%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 210 70% 59%;
+    --border: 157 18% 86%;
+    --input: 157 18% 78%;
+    --ring: 180 52% 19%;
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 10%;
-    --foreground: 0 0% 96%;
+    --background: 180 30% 9%;
+    --foreground: 48 27% 96%;
 
-    --card: 240 10% 12%;
-    --card-foreground: 0 0% 96%;
+    --card: 180 28% 12%;
+    --card-foreground: 48 27% 96%;
 
-    --popover: 240 10% 12%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 180 28% 12%;
+    --popover-foreground: 48 27% 96%;
 
-    --primary: 210 70% 59%; /* #4A90E2 Soft Blue */
-    --primary-foreground: 255 0% 100%;
+    --primary: 160 13% 50%;
+    --primary-foreground: 180 30% 9%;
 
-    --secondary: 164 74% 60%; /* #50E3C2 Teal/Aqua */
-    --secondary-foreground: 255 0% 100%;
+    --secondary: 180 24% 20%;
+    --secondary-foreground: 48 27% 96%;
 
-    --muted: 240 5% 20%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 180 24% 16%;
+    --muted-foreground: 157 15% 70%;
 
-    --accent: 6 94% 69%; /* #FF6F61 Warm Peach/Coral */
-    --accent-foreground: 0 0% 100%;
+    --accent: 47 68% 47%;
+    --accent-foreground: 180 30% 9%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 240 6% 20%;
-    --input: 240 6% 20%;
-    --ring: 210 70% 59%;
+    --border: 180 20% 25%;
+    --input: 180 20% 30%;
+    --ring: 160 13% 50%;
   }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  :where([id]) {
+    scroll-margin-top: 5rem;
+  }
+
   * {
     @apply border-border;
   }
@@ -75,19 +278,36 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-width: 320px;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold text-foreground;
+    @apply font-bold text-foreground;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
 @layer components {
   .subtle-gradient {
-    background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(248, 247, 243, 0.96) 0%, rgba(231, 239, 236, 0.9) 100%);
   }
 
   .hero-gradient {
-    background: linear-gradient(135deg, rgba(74, 144, 226, 0.05) 0%, rgba(255, 111, 97, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(248, 247, 243, 0.96) 0%, rgba(201, 162, 39, 0.08) 100%);
   }
+}
+
+@layer utilities {
+  .bg-gray-50 { background-color: hsl(var(--background)); }
+  .bg-gray-100 { background-color: hsl(var(--secondary)); }
+  .text-gray-400 { color: hsl(var(--muted-foreground) / 0.7); }
+  .text-gray-500, .text-gray-600, .text-gray-700 { color: hsl(var(--muted-foreground)); }
+  .text-gray-800 { color: hsl(var(--foreground)); }
+  .border-gray-200, .border-gray-300 { border-color: hsl(var(--border)); }
+  .text-yellow-400, .fill-yellow-400 { color: #F59E0B; fill: #F59E0B; }
 }

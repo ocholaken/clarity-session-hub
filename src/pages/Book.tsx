@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Check, Loader2, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import type { User } from "@supabase/supabase-js";
 
 interface DbService {
   id: string;
@@ -28,32 +29,46 @@ const startOfDay = (d: Date) => {
   return c;
 };
 
+const formatDateForDB = (value: Date | string | null | undefined) => {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (value instanceof Date) return value.toISOString().split("T")[0];
+  return new Date(value).toISOString().split("T")[0];
+};
+
+const normalizeMpesaPhone = (value: string) => {
+  const phone = value.replace(/\s+/g, "");
+  if (/^07\d{8}$/.test(phone)) return `254${phone.slice(1)}`;
+  if (/^01\d{8}$/.test(phone)) return `254${phone.slice(1)}`;
+  if (/^2547\d{8}$/.test(phone)) return phone;
+  if (/^2541\d{8}$/.test(phone)) return phone;
+  if (/^\+2547\d{8}$/.test(phone)) return phone.slice(1);
+  if (/^\+2541\d{8}$/.test(phone)) return phone.slice(1);
+  return null;
+};
+
 const Book = () => {
   const navigate = useNavigate();
   const [serviceId, setServiceId] = useState<string | null>(null);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [slot, setSlot] = useState<Date | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState<"select" | "details" | "confirm">("select");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
 
-  const { data: services = [], isLoading: loadingServices } = useQuery({
-    queryKey: ["public", "services"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("services")
-        .select("id,name,description,duration_minutes,price")
-        .eq("is_active", true)
-        .order("price");
-      if (error) throw error;
-      return (data ?? []) as DbService[];
-    },
-  });
+  const services = [
+    { id: "1", name: "Individual Therapy", description: "One-on-one counseling session", duration_minutes: 60, price: 3500 },
+    { id: "2", name: "Couples Therapy", description: "Relationship counseling for couples", duration_minutes: 90, price: 5000 },
+    { id: "3", name: "Family Session", description: "Family support and counseling", duration_minutes: 60, price: 4000 },
+  ] as DbService[];
+  const loadingServices = false;
 
   // Prefill from the signed-in account when available
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user;
+      setUser(u);
       if (!u) return;
       setForm((f) => ({
         ...f,
@@ -66,18 +81,8 @@ const Book = () => {
   const dayStart = date ? startOfDay(date) : null;
   const dayEnd = dayStart ? new Date(dayStart.getTime() + 86400000) : null;
 
-  const { data: booked = [], isLoading: loadingBooked, refetch: refetchBooked } = useQuery({
-    queryKey: ["booked", dayStart?.toISOString()],
-    enabled: !!dayStart,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("booked_times", {
-        _from: dayStart!.toISOString(),
-        _to: dayEnd!.toISOString(),
-      });
-      if (error) throw error;
-      return (data ?? []).map((r: { scheduled_at: string }) => new Date(r.scheduled_at).getTime());
-    },
-  });
+  const bookedTimes = [] as string[];
+  const loadingBooked = false;
 
   const slots = useMemo(() => {
     if (!dayStart) return [];
@@ -89,7 +94,7 @@ const Book = () => {
   }, [dayStart]);
 
   const service = services.find((s) => s.id === serviceId) ?? null;
-  const isTaken = (d: Date) => booked.includes(d.getTime());
+  const isTaken = (_d: Date) => bookedTimes.length > 0;
 
   const goToDetails = () => {
     if (!service) return toast.error("Please choose a service");
@@ -97,10 +102,14 @@ const Book = () => {
     setStep("details");
   };
 
+  const handleContinue = () => {
+    goToDetails();
+  };
+
   const goToConfirm = () => {
     if (form.name.trim().length < 2) return toast.error("Please enter your full name");
     if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) return toast.error("Please enter a valid email");
-    if (form.phone.trim().length < 9) return toast.error("Please enter your phone number");
+    if (!normalizeMpesaPhone(form.phone.trim())) return toast.error("Enter a valid M-Pesa number, for example 07XXXXXXXX");
     setStep("confirm");
   };
 
@@ -108,73 +117,60 @@ const Book = () => {
     if (!service || !slot) return;
     setSubmitting(true);
 
-    // Re-check availability right before writing
-    const { data: fresh, error: checkError } = await supabase.rpc("booked_times", {
-      _from: slot.toISOString(),
-      _to: new Date(slot.getTime() + 1000).toISOString(),
-    });
-    if (checkError) {
+    console.log("SelectedDate:", date);
+    console.log("SelectedTime:", slot);
+
+    const selectedService = service;
+    const selectedDate = date ? date.toISOString().split("T")[0] : null;
+    const selectedTime = slot.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    if (!selectedDate) {
       setSubmitting(false);
-      return toast.error("Could not check availability", { description: checkError.message });
-    }
-    if ((fresh ?? []).length > 0) {
-      setSubmitting(false);
-      await refetchBooked();
-      setStep("select");
-      setSlot(null);
-      return toast.error("That time was just taken", { description: "Please pick another slot." });
-    }
-
-    const { data: userData } = await supabase.auth.getUser();
-
-    const { data: created, error } = await supabase
-      .from("appointments")
-      .insert({
-        user_id: userData.user?.id ?? null,
-        client_name: form.name.trim(),
-        client_email: form.email.trim(),
-        client_phone: form.phone.trim(),
-        service_id: service.id,
-        scheduled_at: slot.toISOString(),
-        notes: form.notes.trim() || null,
-        status: "pending",
-      })
-      .select("id")
-      .maybeSingle();
-
-    setSubmitting(false);
-
-    if (error) {
-      const duplicate = error.code === "23505";
-      toast.error(duplicate ? "That time was just taken" : "Booking failed", {
-        description: duplicate ? "Please choose another time slot." : error.message,
-      });
-      if (duplicate) {
-        await refetchBooked();
-        setStep("select");
-        setSlot(null);
-      }
+      toast.error("Select date first");
       return;
     }
 
-    toast.success("Booking successful!", {
-      description: `Your ${service.name} on ${slot.toLocaleString()} is reserved.`,
-      duration: 6000,
-    });
-
-    if (userData.user) {
-      navigate("/my-bookings");
-    } else {
-      toast.message("Create an account to see it in My Bookings", {
-        description: "Sign up with the same email to track your bookings and payments.",
-        duration: 6000,
-      });
-      setStep("select");
-      setSlot(null);
-      setDate(undefined);
-      setForm({ name: "", email: "", phone: "", notes: "" });
+    const phone = normalizeMpesaPhone(form.phone.trim());
+    if (!phone) {
+      setSubmitting(false);
+      toast.error("Enter a valid M-Pesa number");
+      return;
     }
-    void created;
+
+    const { data: payment, error: paymentError } = await supabase.functions.invoke("mpesa-stk", {
+      body: { phone, amount: selectedService.price },
+    });
+    if (paymentError || !payment?.success) {
+      setSubmitting(false);
+      toast.error(payment?.error || paymentError?.message || "Unable to start M-Pesa payment");
+      return;
+    }
+
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    console.log("user", currentUser?.id);
+
+    const { data, error } = await supabase.from("bookings").insert({
+      user_id: currentUser?.id,
+      counselor_id: selectedService?.id || "1",
+      counselor_name: selectedService?.name || "Individual Therapy",
+      booking_date: selectedDate,
+      booking_time: selectedTime,
+      status: "pending",
+    }).select();
+
+    console.log("Insert result:", { data, error });
+
+    if (error) {
+      setSubmitting(false);
+      console.error("Supabase error:", error);
+      toast.error(`Booking failed: ${error.message}`);
+      return;
+    }
+
+    setSubmitting(false);
+
+    toast.success(`Check ${form.phone.replace(/^254/, "0")} for STK prompt`);
+
+    navigate("/my-bookings");
   };
 
   return (
@@ -285,10 +281,10 @@ const Book = () => {
 
                   <Button
                     className="w-full sm:w-auto bg-lavender-500 hover:bg-lavender-600 text-white min-h-[48px] px-8"
-                    onClick={goToDetails}
-                    disabled={!service || !slot}
+                    onClick={handleContinue}
+                    disabled={!date || !slot || !user || submitting}
                   >
-                    Continue
+                    {!user ? "Login to Continue" : "Continue"}
                   </Button>
                 </>
               )}
@@ -319,7 +315,7 @@ const Book = () => {
                       <Input
                         id="phone"
                         inputMode="tel"
-                        placeholder="07XXXXXXXX"
+                        placeholder="07XXXXXXXX or 2547XXXXXXXX"
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       />
@@ -405,7 +401,7 @@ const Book = () => {
                     </Button>
                   </div>
                   <p className="mt-5 text-sm text-center text-gray-500">
-                    Payment is collected after we confirm your slot.
+                  Check {form.phone.replace(/^254/, "0")} for STK prompt. Complete payment to finish your booking.
                   </p>
                 </div>
               )}

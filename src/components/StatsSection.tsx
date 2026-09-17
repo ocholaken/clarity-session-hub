@@ -48,7 +48,7 @@ const StatsSection = () => {
   const { ref, inView } = useInView<HTMLDivElement>(0.3);
 
   return (
-    <section className="py-16 bg-white border-y border-gray-100">
+    <section className="py-16 bg-background border-y border-border">
       <div className="container">
         <div ref={ref} className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
           {stats.map((s, i) => (
@@ -59,7 +59,7 @@ const StatsSection = () => {
                 inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              <p className="text-3xl md:text-5xl font-bold text-lavender-600 tabular-nums">
+              <p className="text-3xl md:text-5xl font-bold text-primary tabular-nums">
                 <Counter value={s.value} suffix={s.suffix} start={inView} />
               </p>
               <p className="mt-2 text-sm md:text-base text-gray-600">{s.label}</p>

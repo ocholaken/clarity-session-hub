@@ -1,13 +1,17 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { handleBookSession } from "@/lib/booking";
 import { BadgeCheck, Globe, Banknote, CalendarCheck } from "lucide-react";
+import sarahImage from "../../Sarah Akoth.jpg";
+import paulineImage from "../../Pauline Oyuga.jpg";
+import anneImage from "../../counselor1.jpg.jpeg";
 
 const counselors = [
   {
     name: "Dr. Sarah Johnson",
     title: "Clinical Psychologist",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    image: sarahImage,
     specialties: ["Anxiety", "Depression", "Trauma"],
     description: "Dr. Johnson specializes in evidence-based cognitive behavioral therapy with 12+ years of experience helping clients overcome anxiety and depression.",
     languages: "English, Swahili",
@@ -17,7 +21,7 @@ const counselors = [
   {
     name: "Mark Williams, LMFT",
     title: "Marriage & Family Therapist",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    image: paulineImage,
     specialties: ["Relationships", "Couples", "Family Dynamics"],
     description: "With a compassionate approach, Mark helps couples and families rebuild communication and strengthen their bonds through proven therapeutic techniques.",
     languages: "English",
@@ -27,7 +31,7 @@ const counselors = [
   {
     name: "Dr. Amara Patel",
     title: "Counseling Psychologist",
-    image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+    image: anneImage,
     specialties: ["Career Development", "Life Transitions", "Stress Management"],
     description: "Dr. Patel blends traditional and modern approaches to help clients navigate major life transitions and professional challenges.",
     languages: "English, Hindi",
@@ -38,18 +42,18 @@ const counselors = [
 
 const Counselors = () => {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-muted">
       <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Counselors</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Our team of licensed professionals is committed to providing you with personalized care and support.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {counselors.map((counselor, index) => (
-            <Card key={index} className="overflow-hidden border border-gray-200 h-full flex flex-col transition-shadow duration-300 hover:shadow-lg">
+            <Card key={index} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm h-full flex flex-col transition-shadow duration-300 hover:shadow-lg">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={counselor.image} 
@@ -57,45 +61,43 @@ const Counselors = () => {
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
                 />
-                <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur px-3 py-1 text-xs font-semibold text-[#3D5A40] shadow">
-                  <BadgeCheck className="h-4 w-4 text-[#7A9E7E]" aria-hidden="true" />
+                <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-accent text-primary px-3 py-1 text-xs font-semibold shadow">
+                  <BadgeCheck className="h-4 w-4 text-primary" aria-hidden="true" />
                   Verified
                 </span>
               </div>
               <CardHeader>
                 <CardTitle className="text-xl">{counselor.name}</CardTitle>
-                <CardDescription className="text-lavender-600">{counselor.title}</CardDescription>
+                <CardDescription className="text-muted-foreground">{counselor.title}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
                 <div className="flex gap-2 flex-wrap mb-4">
                   {counselor.specialties.map((specialty, i) => (
-                    <span key={i} className="bg-[#E8F0E9] text-[#3D5A40] px-3 py-1 rounded-full text-sm">
+                    <span key={i} className="bg-secondary text-secondary-foreground rounded-full px-3 py-1 text-sm">
                       {specialty}
                     </span>
                   ))}
                 </div>
-                <p className="text-gray-600 mb-4">{counselor.description}</p>
-                <dl className="space-y-2 text-sm text-gray-600">
+                <p className="text-muted-foreground mb-4">{counselor.description}</p>
+                <dl className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-[#6B8CAE] shrink-0" aria-hidden="true" />
+                    <Globe className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
                     <dd>{counselor.languages}</dd>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Banknote className="h-4 w-4 text-[#6B8CAE] shrink-0" aria-hidden="true" />
+                    <Banknote className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
                     <dd>{counselor.price}</dd>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CalendarCheck className="h-4 w-4 text-[#6B8CAE] shrink-0" aria-hidden="true" />
+                    <CalendarCheck className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
                     <dd>{counselor.availability}</dd>
                   </div>
                 </dl>
               </CardContent>
               <CardFooter>
-                <Link to="/book" className="w-full">
-                  <Button variant="outline" className="w-full min-h-[44px] border-[#7A9E7E] text-[#3D5A40] hover:bg-[#E8F0E9] transition-transform duration-200 active:scale-[0.98]">
+                <Button onClick={handleBookSession} variant="outline" className="w-full min-h-[44px] border-primary text-primary hover:bg-secondary transition-transform duration-200 active:scale-[0.98]">
                     Book a Session
                   </Button>
-                </Link>
               </CardFooter>
             </Card>
           ))}
@@ -103,7 +105,7 @@ const Counselors = () => {
 
         <div className="text-center mt-12">
           <Link to="/counselors">
-            <Button variant="outline" className="min-h-[44px] border-[#7A9E7E] text-[#3D5A40] hover:bg-[#E8F0E9]">
+            <Button variant="outline" className="min-h-[44px] border-primary text-primary hover:bg-secondary">
               View All Counselors
             </Button>
           </Link>

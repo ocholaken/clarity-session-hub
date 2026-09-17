@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_chat_history: {
+        Row: {
+          id: string
+          user_id: string
+          message: string
+          is_ai: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          message: string
+          is_ai?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          message?: string
+          is_ai?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      daily_guides: {
+        Row: {
+          id: string
+          hour_slot: number
+          title: string
+          content: string
+          category: string
+          image_url: string | null
+        }
+        Insert: {
+          id?: string
+          hour_slot: number
+          title: string
+          content: string
+          category: string
+          image_url?: string | null
+        }
+        Update: {
+          id?: string
+          hour_slot?: number
+          title?: string
+          content?: string
+          category?: string
+          image_url?: string | null
+        }
+        Relationships: []
+      }
+      site_analytics: {
+        Row: {
+          id: string
+          user_id: string | null
+          page_path: string
+          time_spent: number
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          page_path: string
+          time_spent?: number
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          page_path?: string
+          time_spent?: number
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           client_email: string
@@ -263,6 +338,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          role: string
           updated_at: string
         }
         Insert: {
@@ -271,6 +347,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          role?: string
           updated_at?: string
         }
         Update: {
@@ -279,6 +356,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          role?: string
           updated_at?: string
         }
         Relationships: []

@@ -16,6 +16,17 @@ export interface Appointment {
   created_at: string;
 }
 
+export interface Booking {
+  id: string;
+  user_id: string;
+  counselor_name: string | null;
+  counselor_id: string | null;
+  booking_date: string;
+  booking_time: string;
+  status: string;
+  created_at: string;
+}
+
 export interface Service {
   id: string;
   name: string;
@@ -53,6 +64,19 @@ export const useAppointments = () =>
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Appointment[];
+    },
+  });
+
+export const useBookings = () =>
+  useQuery({
+    queryKey: ["admin", "bookings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Booking[];
     },
   });
 

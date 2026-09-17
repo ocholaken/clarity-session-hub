@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, CalendarDays } from "lucide-react";
+import { Loader2, CalendarDays, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Row {
   id: string;
-  client_name: string;
-  scheduled_at: string;
+  booking_date: string;
+  booking_time: string;
+  counselor_name: string | null;
   status: string;
-  notes: string | null;
-  services: { name: string; price: number } | null;
 }
 
 const statusStyles: Record<string, string> = {
@@ -26,23 +26,42 @@ const statusStyles: Record<string, string> = {
 
 const MyBookings = () => {
   const [userId, setUserId] = useState<string | null | undefined>(undefined);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
-  }, []);
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) {
+        setUserId(null);
+        navigate("/login", { replace: true });
+        return;
+      }
+      setUserId(data.user.id);
+    });
+  }, [navigate]);
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ["my-bookings", userId],
     enabled: !!userId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("appointments")
-        .select("id,client_name,scheduled_at,status,notes,services(name,price)")
-        .order("scheduled_at", { ascending: false });
+        .from("bookings")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as Row[];
+      return (data ?? []) as Row[];
     },
   });
+
+  const cancelBooking = async (id: string) => {
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    if (error) {
+      toast.error("Could not cancel booking", { description: error.message });
+      return;
+    }
+    toast.success("Booking cancelled");
+    window.location.reload();
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -77,7 +96,7 @@ const MyBookings = () => {
                 <CalendarDays className="h-8 w-8 mx-auto mb-3 text-lavender-500" />
                 <p className="mb-4 text-gray-600">You have no bookings yet.</p>
                 <Button asChild className="bg-lavender-500 hover:bg-lavender-600 text-white min-h-[48px]">
-                  <Link to="/book">Book a session</Link>
+                  <Link to="/booking">Book a session</Link>
                 </Button>
               </div>
             ) : (
@@ -86,17 +105,14 @@ const MyBookings = () => {
                   <li key={b.id} className="bg-white rounded-xl shadow-md p-5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold">{b.services?.name ?? "Session"}</p>
+                        <p className="font-semibold">{b.counselor_name ?? "General Counselor"}</p>
                         <p className="text-sm text-gray-600">
-                          {new Date(b.scheduled_at).toLocaleString(undefined, {
+                          {new Date(`${b.booking_date}T00:00:00`).toLocaleDateString(undefined, {
                             weekday: "short",
                             month: "long",
                             day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
+                          })} at {b.booking_time}
                         </p>
-                        {b.notes && <p className="text-sm text-gray-500 mt-2">{b.notes}</p>}
                       </div>
                       <div className="text-right">
                         <span
@@ -106,11 +122,9 @@ const MyBookings = () => {
                         >
                           {b.status}
                         </span>
-                        {b.services && (
-                          <p className="mt-2 text-sm font-semibold text-lavender-600">
-                            KES {Number(b.services.price).toLocaleString()}
-                          </p>
-                        )}
+                        <Button variant="outline" size="sm" className="mt-2" onClick={() => cancelBooking(b.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Cancel
+                        </Button>
                       </div>
                     </div>
                   </li>

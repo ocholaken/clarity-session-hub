@@ -1,69 +1,85 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Mail, MailOpen, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Mail, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useMessages } from "@/hooks/useAdminData";
+
+interface ContactMessage {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  date: string;
+}
 
 const AdminMessages = () => {
-  const { data: messages = [], isLoading } = useMessages();
-  const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "messages"] });
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const toggleRead = async (id: string, isRead: boolean) => {
-    const { error } = await supabase.from("messages").update({ is_read: !isRead }).eq("id", id);
-    if (error) return toast.error("Could not update the message");
-    refresh();
+  const loadMessages = async () => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/messages");
+      if (!response.ok) throw new Error("Unable to load messages");
+      const data = await response.json() as ContactMessage[];
+      setMessages(data);
+    } catch (loadError) {
+      console.error(loadError);
+      setError("Messages could not be loaded. Make sure the development server is running.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const remove = async (id: string) => {
-    const { error } = await supabase.from("messages").delete().eq("id", id);
-    if (error) return toast.error("Could not delete the message");
-    toast.success("Message deleted");
-    refresh();
-  };
+  useEffect(() => { void loadMessages(); }, []);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Messages</h2>
-        <p className="text-muted-foreground">Enquiries sent through the contact form.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">Clarity inbox</p>
+          <h2 className="text-2xl font-bold tracking-tight">Contact Messages</h2>
+          <p className="mt-1 text-muted-foreground">Every enquiry from the Clarity Sessions contact form.</p>
+        </div>
+        <Button variant="outline" onClick={() => void loadMessages()} disabled={isLoading} className="gap-2 self-start sm:self-auto">
+          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
-      <div className="space-y-3">
-        {messages.map((m) => (
-          <Card key={m.id} className={m.is_read ? "" : "border-primary/40"}>
-            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-start gap-4">
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold">{m.subject || "No subject"}</p>
-                  {!m.is_read && (
-                    <span className="text-xs rounded-full bg-primary/10 text-primary px-2 py-0.5">New</span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {m.name} · {m.email} · {new Date(m.created_at).toLocaleString()}
-                </p>
-                <p className="mt-3 whitespace-pre-line">{m.message}</p>
-              </div>
-              <div className="flex sm:flex-col gap-2">
-                <Button variant="outline" size="sm" onClick={() => toggleRead(m.id, m.is_read)}>
-                  {m.is_read ? <Mail className="h-4 w-4 mr-2" /> : <MailOpen className="h-4 w-4 mr-2" />}
-                  {m.is_read ? "Unread" : "Read"}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => remove(m.id)}>
-                  <Trash2 className="h-4 w-4 mr-2 text-destructive" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        {!isLoading && messages.length === 0 && (
-          <p className="text-muted-foreground">No messages yet.</p>
-        )}
-      </div>
+      {error && <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+
+      <Card className="overflow-hidden rounded-2xl border-border shadow-sm">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[860px] text-left text-sm">
+              <thead className="bg-primary text-primary-foreground">
+                <tr>
+                  <th className="px-5 py-4 font-semibold">Name</th>
+                  <th className="px-5 py-4 font-semibold">Email</th>
+                  <th className="px-5 py-4 font-semibold">Subject</th>
+                  <th className="px-5 py-4 font-semibold">Message</th>
+                  <th className="px-5 py-4 font-semibold">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {messages.map((item) => (
+                  <tr key={`${item.date}-${item.email}`} className="align-top transition-colors hover:bg-secondary/50">
+                    <td className="px-5 py-4 font-semibold text-foreground">{item.name}</td>
+                    <td className="px-5 py-4 text-muted-foreground">{item.email}</td>
+                    <td className="px-5 py-4 font-medium text-foreground">{item.subject}</td>
+                    <td className="max-w-[360px] whitespace-pre-line px-5 py-4 leading-6 text-muted-foreground">{item.message}</td>
+                    <td className="whitespace-nowrap px-5 py-4 text-muted-foreground">{new Date(item.date).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!isLoading && messages.length === 0 && <div className="p-12 text-center text-muted-foreground"><Mail className="mx-auto mb-3 h-8 w-8 text-primary/60" /><p>No messages yet.</p></div>}
+          {isLoading && <div className="p-12 text-center text-muted-foreground">Loading messages...</div>}
+        </CardContent>
+      </Card>
     </div>
   );
 };

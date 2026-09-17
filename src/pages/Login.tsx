@@ -30,6 +30,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const redirectPath = localStorage.getItem("redirectAfterLogin");
+  const wasRedirected = Boolean(redirectPath);
+  const wasResourceRedirected = redirectPath?.startsWith("/resources") ?? false;
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -41,7 +44,7 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: data.email.trim(),
       password: data.password,
     });
@@ -51,8 +54,17 @@ const Login = () => {
       toast.error("Login failed", { description: error.message });
       return;
     }
+    const signedInUser = authData.user;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", signedInUser.id)
+      .single();
+    sessionStorage.setItem("user", JSON.stringify({ email: data.email.trim() }));
+    const redirectPath = profile?.role === "admin" ? "/admin" : "/";
+    sessionStorage.removeItem("redirectAfterLogin");
     toast.success("Login successful!", { description: "Welcome back to Clarity Sessions!" });
-    navigate("/");
+    navigate(redirectPath);
   };
 
   return (
@@ -67,6 +79,11 @@ const Login = () => {
               </div>
               <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
               <p className="text-gray-600 mt-2">Sign in to continue your journey</p>
+              {wasRedirected && (
+                <p className="mt-3 text-sm font-medium text-lavender-600">
+                  {wasResourceRedirected ? "Please log in to access this resource." : "Please log in to book a session."}
+                </p>
+              )}
             </div>
             
             <Form {...form}>
@@ -108,6 +125,12 @@ const Login = () => {
                     </FormItem>
                   )}
                 />
+
+                <div className="text-right">
+                  <Link to="/forgot-password" className="text-sm text-lavender-600 hover:underline font-medium">
+                    Forgot password?
+                  </Link>
+                </div>
                 
                 <div className="pt-2">
                   <Button 

@@ -127,7 +127,7 @@ const AdminPayments = () => {
       case "completed":
         return "bg-green-100 text-green-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-[#F5EED2] text-[#806613]";
       case "failed":
         return "bg-red-100 text-red-800";
       case "refunded":
@@ -200,7 +200,7 @@ const AdminPayments = () => {
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="revenue" fill="#8884d8" name="Revenue ($)" />
+                  <Bar dataKey="revenue" fill="#174A4A" name="Revenue ($)" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>

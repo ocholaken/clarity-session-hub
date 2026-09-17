@@ -109,7 +109,7 @@ const AdminAppointmentManagement = () => {
       case "confirmed":
         return "bg-green-100 text-green-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-[#F5EED2] text-[#806613]";
       case "canceled":
         return "bg-red-100 text-red-800";
       case "completed":

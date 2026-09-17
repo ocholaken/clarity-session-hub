@@ -48,11 +48,11 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error } = await supabase.auth.signUp({
       email: data.email.trim(),
       password: data.password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: "http://localhost:8080",
         data: { full_name: data.name.trim() },
       },
     });
@@ -62,8 +62,21 @@ const Register = () => {
       toast.error("Registration failed", { description: error.message });
       return;
     }
+    if (authData.user) {
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: authData.user.id,
+        email: data.email.trim(),
+        full_name: data.name.trim(),
+        role: data.email.trim().toLowerCase() === "ocholakenna1@gmail.com" ? "admin" : "user",
+      });
+      if (profileError) {
+        toast.error("Profile setup failed", { description: profileError.message });
+        setIsLoading(false);
+        return;
+      }
+    }
     toast.success("Account created", {
-      description: "Check your email and click the confirmation link to finish signing up.",
+      description: "You can now sign in to your account.",
     });
     navigate("/login");
   };

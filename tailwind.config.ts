@@ -19,6 +19,13 @@ export default {
 		},
 		extend: {
 			colors: {
+				clarity: {
+					50: '#F9F8FF',
+					100: '#EDE9FE',
+					500: '#6D28D9',
+					600: '#4F46E5',
+					900: '#111827',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -62,68 +69,24 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors mapped to our palette
+				// Custom colors mapped to the original wellness palette.
 				softBlue: {
-					DEFAULT: '#4A90E2',
-					50: '#EBF3FC',
-					100: '#D6E7F8',
-					200: '#ADD0F1',
-					300: '#85B8EA',
-					400: '#5CA1E3',
-					500: '#4A90E2', // Primary color
-					600: '#1F77D6',
-					700: '#185CAA',
-					800: '#12447F',
-					900: '#0C2C53',
+					DEFAULT: '#174A4A', 50: '#F8F7F3', 100: '#E7EFEC', 200: '#D2E1DC', 300: '#B7CDC5', 400: '#6F9085', 500: '#174A4A', 600: '#103838', 700: '#0D2E2E', 800: '#092424', 900: '#061A1A',
 				},
 				teal: {
-					DEFAULT: '#50E3C2',
-					50: '#E6FBF6',
-					100: '#CDF7ED',
-					200: '#9AEFDC',
-					300: '#67E7CB',
-					400: '#50E3C2', // Secondary color
-					500: '#24D9AE',
-					600: '#1BAB89',
-					700: '#147D64',
-					800: '#0D4E3F',
-					900: '#06201A',
+					DEFAULT: '#6F9085', 50: '#F3F7F5', 100: '#E7EFEC', 200: '#D2E1DC', 300: '#B7CDC5', 400: '#6F9085', 500: '#5D8175', 600: '#4F6F65', 700: '#3F5C53', 800: '#30483F', 900: '#20332D',
 				},
 				coral: {
-					DEFAULT: '#FF6F61',
-					50: '#FFF1F0',
-					100: '#FFE4E1',
-					200: '#FFC9C3',
-					300: '#FFAEA5',
-					400: '#FF9183',
-					500: '#FF6F61', // Accent/CTA color
-					600: '#FF3A27',
-					700: '#EC1400',
-					800: '#B41000',
-					900: '#7C0B00',
+					DEFAULT: '#C9A227', 50: '#FCFAF0', 100: '#F5EED2', 200: '#EBDD9F', 300: '#DEC96B', 400: '#D2B746', 500: '#C9A227', 600: '#A9871C', 700: '#806613', 800: '#5B470E', 900: '#382B08',
 				},
-				// Keep existing colors
 				lavender: {
-					100: '#e5deff',
-					200: '#d6bcfa',
-					300: '#b794f4',
-					400: '#9b87f5',
-					500: '#805ad5',
-					600: '#7E69AB',
-					700: '#6E59A5',
-					800: '#553c9a',
-					900: '#1A1F2C',
+					50: '#F8F7F3', 100: '#E7EFEC', 200: '#D2E1DC', 300: '#B7CDC5', 400: '#6F9085', 500: '#174A4A', 600: '#103838', 700: '#0D2E2E', 800: '#092424', 900: '#061A1A',
 				},
 				peach: {
-					100: '#FEF7CD',
-					200: '#FDE1D3',
-					300: '#FEC6A1',
+					100: '#FEF7CD', 200: '#FDE1D3', 300: '#FEC6A1',
 				},
 				soft: {
-					green: '#F2FCE2',
-					blue: '#D3E4FD',
-					gray: '#F1F0FB',
-					pink: '#FFDEE2',
+					green: '#F2FCE2', blue: '#D3E4FD', gray: '#F1F0FB', pink: '#FFDEE2',
 				},
 			},
 			borderRadius: {

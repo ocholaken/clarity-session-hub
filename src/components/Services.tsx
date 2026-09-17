@@ -37,12 +37,22 @@ const services = [
 ];
 
 const Services = () => {
+  const handleBookSession = () => {
+    const isLoggedIn = localStorage.getItem("user") || localStorage.getItem("token");
+    if (!isLoggedIn) {
+      localStorage.setItem("redirectAfterLogin", "/booking");
+      window.location.href = "/login";
+      return;
+    }
+    window.location.href = "/booking";
+  };
+
   return (
     <section className="py-16 md:py-24">
       <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Professional counseling services to guide you through life's challenges and support your mental wellbeing.
           </p>
         </div>
@@ -51,26 +61,21 @@ const Services = () => {
           {services.map((service, index) => (
             <Card
               key={index}
-              className="group flex flex-col border border-gray-200 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#7A9E7E]/50"
+              className="group flex flex-col rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50"
             >
               <CardHeader>
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F0E9] transition-transform duration-300 group-hover:scale-110">
-                  <service.icon className="h-7 w-7 text-[#7A9E7E]" aria-hidden="true" />
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent transition-transform duration-300 group-hover:scale-110">
+                  <service.icon className="h-7 w-7 text-primary" aria-hidden="true" />
                 </div>
                 <CardTitle className="text-xl">{service.title}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
-                <CardDescription className="flex-1 text-base text-gray-600">
+                <CardDescription className="flex-1 text-base text-muted-foreground">
                   {service.description}
                 </CardDescription>
-                <Link to="/book" className="mt-6">
-                  <Button
-                    variant="outline"
-                    className="w-full min-h-[44px] border-[#7A9E7E] text-[#3D5A40] hover:bg-[#E8F0E9] transition-transform duration-200 active:scale-[0.98]"
-                  >
-                    Book Now
-                  </Button>
-                </Link>
+                <Button onClick={handleBookSession} className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+                  Book Now
+                </Button>
               </CardContent>
             </Card>
           ))}

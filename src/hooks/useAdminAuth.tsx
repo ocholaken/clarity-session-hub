@@ -19,15 +19,21 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Checks the admin role on the server (never trust the browser for this)
-  const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
+  const checkAdminRole = async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) {
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
       .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
+      .eq("id", currentUser.id)
       .maybeSingle();
-    setIsAdmin(!!data);
+    const email = currentUser.email?.toLowerCase();
+    setIsAdmin(profile?.role === "admin");
     setLoading(false);
   };
 
@@ -38,7 +44,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
 
       if (newSession?.user) {
         // Avoid calling other Supabase APIs inside the callback
-        setTimeout(() => checkAdminRole(newSession.user.id), 0);
+        setTimeout(() => checkAdminRole(), 0);
       } else {
         setIsAdmin(false);
         setLoading(false);
@@ -49,7 +55,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       setSession(existing);
       setUser(existing?.user ?? null);
       if (existing?.user) {
-        checkAdminRole(existing.user.id);
+        checkAdminRole();
       } else {
         setLoading(false);
       }

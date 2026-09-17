@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
@@ -17,17 +19,20 @@ import Resources from "./pages/Resources";
 import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
 import MyBookings from "./pages/MyBookings";
+import Admin from "./pages/Admin";
+import ProtectedBooking from "./components/ProtectedBooking";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import ClarityAIChatbot from "./components/ClarityAIChatbot";
+import FloatingWhatsApp from "./components/FloatingWhatsApp";
 
 const queryClient = new QueryClient();
 
@@ -44,19 +49,22 @@ const App = () => (
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/register" element={<Register />} />
               <Route path="/counselors" element={<Counselors />} />
               <Route path="/resources" element={<Resources />} />
-              <Route path="/book" element={<Book />} />
+              <Route path="/book" element={<ProtectedBooking><Book /></ProtectedBooking>} />
+              <Route path="/booking" element={<ProtectedBooking><Book /></ProtectedBooking>} />
               <Route path="/my-bookings" element={<MyBookings />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
 
               {/* Admin area — not linked from the public site */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/login" element={<Login />} />
+              <Route path="/admin" element={<Admin />} />
               <Route element={<ProtectedAdminRoute />}>
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
+                <Route path="/admin/*" element={<AdminLayout />}>
                   <Route path="appointments" element={<AdminAppointments />} />
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="services" element={<AdminServices />} />
@@ -69,6 +77,8 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <ClarityAIChatbot />
+            <FloatingWhatsApp />
           </AdminAuthProvider>
         </BrowserRouter>
       </TooltipProvider>

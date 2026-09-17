@@ -4,7 +4,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 /**
  * Guards every /admin route.
- * - Not signed in  -> /admin/login
+ * - Not signed in  -> /
  * - Signed in but not an admin -> back to the public site
  */
 const ProtectedAdminRoute = () => {
@@ -19,12 +19,8 @@ const ProtectedAdminRoute = () => {
     );
   }
 
-  if (!session) {
-    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  if (!session || !isAdmin) {
+    return <Navigate to="/" state={{ from: location.pathname }} replace />;
   }
 
   return <Outlet />;

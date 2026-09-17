@@ -110,8 +110,8 @@ const AdminDashboardOverview = () => {
                     <Area 
                       type="monotone" 
                       dataKey="appointments" 
-                      stroke="#8884d8" 
-                      fill="#8884d8" 
+                      stroke="#174A4A"
+                      fill="#174A4A"
                       fillOpacity={0.3} 
                       name="Appointments"
                     />
