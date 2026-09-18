@@ -4,22 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client"; // <— IMPORTANT
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "",
-    message: "",
+    name: "", email: "", phone: "", subject: "", message: "",
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSuccess("");
     try {
       const { error } = await supabase.from("contact_messages").insert({
         name: formData.name,
@@ -29,11 +26,10 @@ const Contact = () => {
         message: formData.message,
       });
       if (error) throw error;
-      alert("Message sent successfully! Thank you.");
+      setSuccess("Thank you for messaging Clarity Session Hub! We have received your message and will get back to you soon.");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (err: any) {
-      alert("REAL ERROR: " + err.message);
-      console.error(err);
+      setSuccess("Error: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -42,14 +38,21 @@ const Contact = () => {
   return (
     <div>
       <Header />
-      <div className="container py-12">
+      <div className="container mx-auto py-12 px-4">
         <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
+        
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 max-w-xl">
+            {success}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-          <Input placeholder="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
-          <Input placeholder="Email" type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
-          <Input placeholder="Phone (555) 123-4567" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-          <Input placeholder="Subject" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} />
-          <Textarea placeholder="Your message..." value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} required />
+          <Input name="name" placeholder="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+          <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} required />
+          <Input name="phone" placeholder="Phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+          <Input name="subject" placeholder="Subject" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} />
+          <Textarea name="message" placeholder="Your message..." value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} required />
           <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Sending..." : "Send Message"}</Button>
         </form>
       </div>
