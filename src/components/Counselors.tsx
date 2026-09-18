@@ -9,17 +9,17 @@ import anneImage from "../../counselor1.jpg.jpeg";
 
 const counselors = [
   {
-    name: "Dr. Sarah Johnson",
+    name: "Dr. Sarah Akoth",
     title: "Clinical Psychologist",
     image: sarahImage,
     specialties: ["Anxiety", "Depression", "Trauma"],
-    description: "Dr. Johnson specializes in evidence-based cognitive behavioral therapy with 12+ years of experience helping clients overcome anxiety and depression.",
+    description: "Dr. Sarah specializes in evidence-based cognitive behavioral therapy with 12+ years of experience helping clients overcome anxiety and depression.",
     languages: "English, Swahili",
     price: "KSh 3,500 / session",
     availability: "Mon – Fri",
   },
   {
-    name: "Mark Williams, LMFT",
+    name: "Pauline Oyuga, ",
     title: "Marriage & Family Therapist",
     image: paulineImage,
     specialties: ["Relationships", "Couples", "Family Dynamics"],
@@ -29,12 +29,12 @@ const counselors = [
     availability: "Tue – Sat",
   },
   {
-    name: "Dr. Amara Patel",
+    name: "Dr. Anne Wagude",
     title: "Counseling Psychologist",
     image: anneImage,
-    specialties: ["Career Development", "Life Transitions", "Stress Management"],
-    description: "Dr. Patel blends traditional and modern approaches to help clients navigate major life transitions and professional challenges.",
-    languages: "English, Hindi",
+    specialties: ["Lincensed counseling psychologist, Educator, Traner and Mentor"],
+    description: "Dr. Anne is a licensed Counselling Psychologist dedicated to supporting adolescents and teens through life's challenges, offering compassionate expertise in grief, trauma recovery, and psychological debriefing.",
+    languages: "English, Swahili",
     price: "KSh 3,500 / session",
     availability: "Mon – Sat",
   },

@@ -14,44 +14,44 @@ import bellaImage from "../../Bela.jpg";
 import paulineImage from "../../Pauline Oyuga.jpg";
 
 const counselors = [
+  // {
+  //   name: "Dr. Sarah Johnson",
+  //   title: "Clinical Psychologist",
+  //   image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+  //   specialties: ["Anxiety", "Depression", "Trauma"],
+  //   description: "Dr. Johnson specializes in evidence-based cognitive behavioral therapy with 12+ years of experience helping clients overcome anxiety and depression.",
+  //   education: "Ph.D. in Clinical Psychology, Stanford University",
+  //   experience: "12+ years",
+  //   rating: 4.9,
+  //   reviews: 124,
+  //   availabilityMessage: "Available next week"
+  // },
   {
-    name: "Dr. Sarah Johnson",
-    title: "Clinical Psychologist",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
-    specialties: ["Anxiety", "Depression", "Trauma"],
-    description: "Dr. Johnson specializes in evidence-based cognitive behavioral therapy with 12+ years of experience helping clients overcome anxiety and depression.",
-    education: "Ph.D. in Clinical Psychology, Stanford University",
-    experience: "12+ years",
-    rating: 4.9,
-    reviews: 124,
-    availabilityMessage: "Available next week"
-  },
-  {
-    name: "Pauline Oyuga",
+    name: " Dr.Pauline Oyuga",
     title: "Counselor",
     image: paulineImage,
     specialties: ["Wellbeing", "Life Transitions", "Supportive Counseling"],
     description: "Pauline Oyuga is currently working in Sunderland, UK, supporting people with a compassionate and practical approach.",
-    education: "Counseling professional",
+    education: "Masters in Counseling Psychology, University of Sunderland",
     experience: "7+ years",
-    rating: 4.8,
-    reviews: 97,
+    rating: 3.0,
+    reviews: 66,
     availabilityMessage: "Available this week"
   },
   {
-    name: "Dr. Anne Wagude",
+    name: "Anne Wagude",
     title: "Counseling Psychologist",
     image: anneImage,
-    specialties: ["Career Development", "Life Transitions", "Stress Management"],
-    description: "Dr. Patel blends traditional and modern approaches to help clients navigate major life transitions and professional challenges.",
-    education: "Psy.D. in Counseling Psychology, Columbia University",
+    specialties: ["  Teen and Adolescent . Grief and Trauma . Psychological Debrifing"],
+    description: "Dr. Wagude blends traditional and modern approaches to help clients navigate major life transitions and professional challenges.",
+    education: "D. in Counseling Psychology, KIPC",
     experience: "8+ years",
-    rating: 4.7,
-    reviews: 86,
+    rating: 3.7,
+    reviews: 50,
     availabilityMessage: "Available tomorrow"
   },
   {
-    name: "Job Kenneth, LPC",
+    name: "Kenneth Ochola, LPC",
     title: "Psychologist, Frontend Developer & AI Architect",
     image: kennethImage,
     specialties: ["Psychological Intelligence", "Frontend Engineering", "AI Architecture"],
@@ -59,19 +59,19 @@ const counselors = [
     education: "Psychologist by training",
     experience: "Co-Founder, Clarity Session Hub | CEO, Clarity",
     rating: 4.9,
-    reviews: 112,
+    reviews: 50,
     availabilityMessage: "Limited availability"
   },
   {
-    name: "Dr. Bella Linda",
+    name: "Bella Linda",
     title: "Child & Adolescent Psychologist",
     image: bellaImage,
     specialties: ["Child Development", "ADHD", "School Issues"],
-    description: "Dr. Rodriguez has dedicated her career to supporting children, adolescents, and their families through developmental challenges and school-related issues.",
-    education: "Ph.D. in Child Psychology, University of Michigan",
+    description: "Dr.Linda has dedicated her career to supporting children, adolescents, and their families through developmental challenges and school-related issues.",
+    education: "BA. in Child Psychology, University of Maseno",
     experience: "4+ years",
     rating: 4.8,
-    reviews: 148,
+    reviews: 58,
     availabilityMessage: "Available next week"
   },
   {
@@ -79,11 +79,11 @@ const counselors = [
     title: "Bachelor in Counseling Psychology",
     image: sarahImage,
     specialties: ["Grief & Loss", "PTSD", "Veterans"],
-    description: "Robert provides compassionate support for those dealing with grief, loss, and trauma, with a special focus on veterans and military families.",
-    education: "MSW, University of Washington",
+    description: "Sarah provides compassionate support for those dealing with grief, loss, and trauma, with a special focus on veterans and military families.",
+    education: "Mku, University",
     experience: "3+ years",
     rating: 4.9,
-    reviews: 91,
+    reviews: 49,
     availabilityMessage: "Available this week"
   }
 ];

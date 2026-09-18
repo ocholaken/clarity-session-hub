@@ -8,10 +8,10 @@ interface Stat {
 }
 
 const stats: Stat[] = [
-  { value: 500, suffix: "+", label: "Clients supported" },
-  { value: 1000, suffix: "+", label: "Sessions delivered" },
+  { value: 50, suffix: "+", label: "Clients supported" },
+  { value: 120, suffix: "+", label: "Sessions delivered" },
   { value: 95, suffix: "%", label: "Client satisfaction" },
-  { value: 12, suffix: "", label: "Licensed counselors" },
+  { value: 6, suffix: "", label: "Licensed counselors" },
 ];
 
 const Counter = ({ value, suffix, start }: { value: number; suffix: string; start: boolean }) => {
