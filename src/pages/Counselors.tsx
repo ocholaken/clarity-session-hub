@@ -36,7 +36,7 @@ const counselors = [
     experience: "7+ years",
     rating: 3.0,
     reviews: 66,
-    availabilityMessage: "Available this week"
+    availabilityMessage: "Currently unavailable"
   },
   {
     name: "Anne Wagude",
