@@ -19,7 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useServices } from "@/hooks/useAdminData";
 
-const emptyForm = { name: "", description: "", duration_minutes: 60, price: 0 };
+const emptyForm = { name: "", description: "", duration_minutes: 60, price: 2500 };
 
 const AdminServices = () => {
   const { data: services = [], isLoading } = useServices();
@@ -30,6 +30,10 @@ const AdminServices = () => {
 
   const addService = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.price < 2500 || form.price > 3500) {
+      return toast.error("Service prices must be between KSh 2,500 and KSh 3,500");
+    }
+
     setSaving(true);
     const { error } = await supabase.from("services").insert({
       name: form.name,
@@ -95,7 +99,9 @@ const AdminServices = () => {
                 <Input
                   id="price"
                   type="number"
-                  min={0}
+                  min={2500}
+                  max={3500}
+                  required
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
                 />

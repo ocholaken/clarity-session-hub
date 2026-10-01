@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "visitor_id";
 const LEGACY_STORAGE_KEY = "clarity_visitor_id";
-const SESSION_KEY = "clarity_session_id";
+const SESSION_KEY = "session_id";
+const LEGACY_SESSION_KEY = "clarity_session_id";
 
 export const getOrCreateVisitorId = () => {
   if (typeof window === "undefined") return null;
@@ -19,28 +20,37 @@ export const getOrCreateVisitorId = () => {
   return visitorId;
 };
 
-const getSessionId = () => {
+export const getOrCreateSessionId = () => {
   if (typeof window === "undefined") return null;
 
-  let sessionId = window.localStorage.getItem(SESSION_KEY);
+  let sessionId = window.localStorage.getItem(SESSION_KEY) || window.localStorage.getItem(LEGACY_SESSION_KEY);
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    window.localStorage.setItem(SESSION_KEY, sessionId);
   }
+  window.localStorage.setItem(SESSION_KEY, sessionId);
+  window.localStorage.setItem(LEGACY_SESSION_KEY, sessionId);
 
   return sessionId;
 };
 
-const recordPageView = async (page: string, scrollDepth: number | null = null) => {
-  const sessionId = getSessionId();
+const recordPageView = async (page: string) => {
+  const sessionId = getOrCreateSessionId();
   if (!sessionId) return;
 
-  const { error } = await (supabase as any).from("page_views").insert({
-    page,
-    session_id: sessionId,
-  });
+  try {
+    const { data, error } = await (supabase as any)
+      .from("page_views")
+      .insert({ page, session_id: sessionId })
+      .select("id, page, session_id, created_at")
+      .single();
 
-  if (error) console.warn("Page view tracking failed:", error);
+    console.log("page_view inserted", { data, error, page, sessionId });
+    if (error) {
+      console.error("page_view insert failed", error);
+    }
+  } catch (error) {
+    console.error("page_view insert failed", error);
+  }
 };
 
 const detectBrowser = () => {
@@ -70,7 +80,7 @@ export const trackAnonymousEvent = async (
   scrollDepth?: number,
 ) => {
   const visitorId = getOrCreateVisitorId();
-  const sessionId = getSessionId();
+  const sessionId = getOrCreateSessionId();
   if (!visitorId || !sessionId) return;
 
   const userAgent = navigator.userAgent || "Unknown";

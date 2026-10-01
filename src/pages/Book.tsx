@@ -59,8 +59,8 @@ const Book = () => {
 
   const services = [
     { id: "1", name: "Individual Therapy", description: "One-on-one counseling session", duration_minutes: 60, price: 3500 },
-    { id: "2", name: "Couples Therapy", description: "Relationship counseling for couples", duration_minutes: 90, price: 5000 },
-    { id: "3", name: "Family Session", description: "Family support and counseling", duration_minutes: 60, price: 4000 },
+    { id: "2", name: "Couples Therapy", description: "Relationship counseling for couples", duration_minutes: 90, price: 3500 },
+    { id: "3", name: "Family Session", description: "Family support and counseling", duration_minutes: 60, price: 3000 },
   ] as DbService[];
   const loadingServices = false;
 

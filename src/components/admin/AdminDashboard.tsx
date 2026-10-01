@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Calendar, Check, Clock3, CreditCard, Download, ExternalLink, Filter, LogOut, Mail, MapPin, MessageSquareText, Monitor, Search, ShieldCheck, Smartphone, TabletSmartphone, Users, X } from "lucide-react";
+import { Bell, Calendar, Check, Clock3, CreditCard, Download, ExternalLink, Filter, LogOut, Mail, MapPin, MessageSquareText, Monitor, Search, ShieldCheck, Smartphone, TabletSmartphone, Trash2, Users, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -66,22 +66,137 @@ const AdminDashboard = () => {
   };
 
   const loadLivePageViews = async () => {
-    const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const [pageViewsRes, activeSessionsRes] = await Promise.all([
-      (supabase as any).from("page_views").select("id, page, session_id, created_at").gt("created_at", since).order("created_at", { ascending: false }).limit(100),
-      (supabase as any).rpc("count_active_page_view_sessions"),
-    ]);
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data, error } = await (supabase as any)
+      .from("page_views")
+      .select("*")
+      .gte("created_at", tenMinAgo)
+      .order("created_at", { ascending: false });
 
-    if (pageViewsRes.error || activeSessionsRes.error) {
-      const error = pageViewsRes.error || activeSessionsRes.error;
+    console.log("Live raw data", data, error);
+
+    if (error) {
       console.error("Live page-view load failed", error);
       setPageViewsLoading(false);
       return;
     }
 
-    setLivePageViews(pageViewsRes.data ?? []);
-    setActivePageViewSessions(Number(activeSessionsRes.data ?? 0));
+    const uniqueSessions = new Set(
+      (data ?? [])
+        .filter((view: any) => view?.session_id)
+        .map((view: any) => String(view.session_id)),
+    );
+
+    setLivePageViews(data ?? []);
+    setActivePageViewSessions(uniqueSessions.size);
     setPageViewsLoading(false);
+  };
+
+  const deletePageViewRow = async (viewId: string) => {
+    if (!window.confirm("Delete this view?")) return;
+
+    const { error } = await (supabase as any).from("page_views").delete().eq("id", viewId);
+    if (error) {
+      console.error("Delete page view failed", error);
+      toast.error("Could not delete this page view.");
+      return;
+    }
+
+    setLivePageViews((current) => current.filter((view: any) => view.id !== viewId));
+    toast.success("Page view deleted");
+  };
+
+  const clearRecentPageViews = async () => {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    if (!window.confirm("Clear all page views from the last 30 minutes?")) return;
+
+    const { error } = await (supabase as any).from("page_views").delete().gte("created_at", thirtyMinAgo);
+    if (error) {
+      console.error("Clear page views failed", error);
+      toast.error("Could not clear recent page views.");
+      return;
+    }
+
+    toast.success("Recent page views cleared");
+    void loadLivePageViews();
+  };
+
+  const deleteMySessionViews = async () => {
+    const sessionId = window.localStorage.getItem("session_id");
+    if (!sessionId) {
+      toast.error("No active session to delete.");
+      return;
+    }
+
+    if (!window.confirm("Delete all page views for your current session?")) return;
+
+    const { error } = await (supabase as any).from("page_views").delete().eq("session_id", sessionId);
+    if (error) {
+      console.error("Delete my session views failed", error);
+      toast.error("Could not delete your session views.");
+      return;
+    }
+
+    toast.success("Your session views were deleted");
+    void loadLivePageViews();
+  };
+
+  const deleteChatRow = async (chatId: string) => {
+    if (!window.confirm("Delete this chat?")) return;
+
+    const { error } = await (supabase as any).from("ai_chat_logs").delete().eq("id", chatId);
+    if (error) {
+      console.error("Delete chat failed", error);
+      toast.error("Could not delete this chat.");
+      return;
+    }
+
+    setAiConversations((current) => current.filter((chat: any) => chat.id !== chatId));
+    toast.success("Chat deleted");
+  };
+
+  const clearAllChats = async () => {
+    if (!window.confirm("Clear all AI chat logs?")) return;
+
+    const { error } = await (supabase as any).from("ai_chat_logs").delete().neq("id", "");
+    if (error) {
+      console.error("Clear AI chats failed", error);
+      toast.error("Could not clear AI chats.");
+      return;
+    }
+
+    setAiConversations([]);
+    toast.success("All chat logs cleared");
+  };
+
+  const deleteUserRow = async (userId: string, email?: string) => {
+    if (!window.confirm(`Delete user ${email || "this user"}? This cannot be undone.`)) return;
+
+    const { error: userError } = await (supabase as any).from("users").delete().eq("id", userId);
+    if (userError) {
+      console.error("Delete user failed", userError);
+    }
+
+    const { error: bookingError } = await (supabase as any).from("bookings").delete().eq("user_id", userId);
+    if (bookingError) {
+      console.error("Delete linked bookings failed", bookingError);
+    }
+
+    setUsers((current) => current.filter((user: any) => user.id !== userId));
+    toast.success("User deleted");
+  };
+
+  const deleteAllTestUsers = async () => {
+    if (!window.confirm("Delete all test users?")) return;
+
+    const testUsers = users.filter((user: any) => String(user.email || "").toLowerCase().includes("test"));
+    for (const user of testUsers) {
+      await (supabase as any).from("users").delete().eq("id", user.id);
+      await (supabase as any).from("bookings").delete().eq("user_id", user.id);
+    }
+
+    setUsers((current) => current.filter((user: any) => !String(user.email || "").toLowerCase().includes("test")));
+    toast.success("Test users deleted");
   };
 
   const loadData = async () => {
@@ -91,7 +206,7 @@ const AdminDashboard = () => {
         (supabase as any).from("bookings").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("contact_messages").select("*").order("created_at", { ascending: false }),
         supabase.from("payments").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("ai_conversations").select("*").order("created_at", { ascending: false }).limit(20),
+        (supabase as any).from("ai_chat_logs").select("*").order("created_at", { ascending: false }).limit(20),
       ]);
 
       const profileRows = profilesRes.data ?? [];
@@ -150,7 +265,7 @@ const AdminDashboard = () => {
     const channel = supabase.channel("clarity-dashboard-live");
 
     channel
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "ai_conversations" }, (payload: any) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "ai_chat_logs" }, (payload: any) => {
         setAiConversations((current) => [payload.new, ...current.filter((item: any) => item.id !== payload.new.id)].slice(0, 20));
         toast.success("New AI conversation received");
       })
@@ -354,6 +469,13 @@ const AdminDashboard = () => {
                   <h3 className="text-lg font-semibold text-slate-900">Users</h3>
                   <p className="text-sm text-slate-500">Search current members by name or email</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => void deleteAllTestUsers()}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete All Test Users
+                </button>
               </div>
 
               <div className="overflow-x-auto">
@@ -365,12 +487,13 @@ const AdminDashboard = () => {
                       <th className="px-3 py-3">Phone</th>
                       <th className="px-3 py-3">Role</th>
                       <th className="px-3 py-3">Created At</th>
+                      <th className="px-3 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-3 py-10 text-center text-slate-400">No users found</td>
+                        <td colSpan={6} className="px-3 py-10 text-center text-slate-400">No users found</td>
                       </tr>
                     ) : (
                       filteredUsers.map((user: any) => (
@@ -380,6 +503,15 @@ const AdminDashboard = () => {
                           <td className="px-3 py-3 text-slate-600">{user.phone || "—"}</td>
                           <td className="px-3 py-3"><span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{user.role || "client"}</span></td>
                           <td className="px-3 py-3 text-slate-500">{user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}</td>
+                          <td className="px-3 py-3">
+                            <button
+                              type="button"
+                              onClick={() => void deleteUserRow(user.id, user.email)}
+                              className="inline-flex items-center gap-2 rounded-md bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -478,6 +610,13 @@ const AdminDashboard = () => {
                   <h3 className="text-lg font-semibold text-slate-900">AI Conversations</h3>
                   <p className="text-sm text-slate-500">{aiConversations.length} Total</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => void clearAllChats()}
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                >
+                  <Trash2 className="h-4 w-4" /> Clear All Chats
+                </button>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {aiConversations.length === 0 ? (
@@ -489,8 +628,17 @@ const AdminDashboard = () => {
                         <p className="text-sm font-bold text-slate-900">Visitor: {conversation.visitor_id ? String(conversation.visitor_id).slice(0, 8).toUpperCase() : "Unknown"}</p>
                         <span className="rounded-full bg-slate-900 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-white">{conversation.role || "chat"}</span>
                       </div>
-                      <div className="mt-3 rounded-xl bg-white p-3 text-sm leading-6 text-slate-700 shadow-sm">{conversation.message || conversation.content || "No message content"}</div>
-                      <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-slate-500">{conversation.created_at ? new Date(conversation.created_at).toLocaleString() : "—"}</p>
+                      <div className="mt-3 rounded-xl bg-white p-3 text-sm leading-6 text-slate-700 shadow-sm">{conversation.message || conversation.content || conversation.user_message || conversation.ai_response || "No message content"}</div>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">{conversation.created_at ? new Date(conversation.created_at).toLocaleString() : "—"}</p>
+                        <button
+                          type="button"
+                          onClick={() => void deleteChatRow(conversation.id)}
+                          className="inline-flex items-center gap-2 rounded-md bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -505,7 +653,23 @@ const AdminDashboard = () => {
                   <h3 className="text-lg font-semibold text-slate-900">Live Visitors</h3>
                   <p className="text-sm text-slate-500">Page views from the last 30 minutes, newest first</p>
                 </div>
-                <span className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{activePageViewSessions} active sessions</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{activePageViewSessions} active sessions</span>
+                  <button
+                    type="button"
+                    onClick={() => void clearRecentPageViews()}
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                  >
+                    <Trash2 className="h-4 w-4" /> Clear All (last 30 min)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void deleteMySessionViews()}
+                    className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete My Session
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="min-w-full text-sm">
@@ -515,21 +679,41 @@ const AdminDashboard = () => {
                       <th className="px-3 py-3">Session</th>
                       <th className="px-3 py-3">Device</th>
                       <th className="px-3 py-3">Viewed</th>
+                      <th className="px-3 py-3">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pageViewsLoading ? (
-                      <tr><td colSpan={4} className="px-3 py-8 text-center text-slate-500">Loading page views...</td></tr>
+                      <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-500">Loading page views...</td></tr>
                     ) : livePageViews.length === 0 ? (
-                      <tr><td colSpan={4} className="px-3 py-8 text-center text-slate-500">No page views in the last 30 minutes.</td></tr>
-                    ) : livePageViews.map((view: any) => (
-                      <tr key={view.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                        <td className="px-3 py-3 font-medium text-slate-900">{view.page || "/"}</td>
-                        <td className="px-3 py-3 font-mono text-xs text-slate-500">{view.session_id ? `${String(view.session_id).slice(0, 12)}…` : "Unknown session"}</td>
-                        <td className="px-3 py-3 text-slate-500">Device unavailable</td>
-                        <td className="whitespace-nowrap px-3 py-3 text-slate-500">{view.created_at ? new Date(view.created_at).toLocaleString() : "—"}</td>
-                      </tr>
-                    ))}
+                      <tr><td colSpan={5} className="px-3 py-8 text-center text-slate-500">No page views in the last 10 minutes.</td></tr>
+                    ) : livePageViews.map((view: any) => {
+                      const page = view.page || view.path || "/";
+                      const isLive = view.created_at && new Date(view.created_at).getTime() > Date.now() - 5 * 60 * 1000;
+                      return (
+                        <tr key={view.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                          <td className="px-3 py-3 font-medium text-slate-900">
+                            <div className="flex items-center gap-2">
+                              <span>{page}</span>
+                              {isLive && <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700">LIVE</span>}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 font-mono text-xs text-slate-500">{view.session_id ? `${String(view.session_id).slice(0, 12)}…` : "Unknown session"}</td>
+                          <td className="px-3 py-3 text-slate-500">Device unavailable</td>
+                          <td className="whitespace-nowrap px-3 py-3 text-slate-500">{view.created_at ? new Date(view.created_at).toLocaleString() : "—"}</td>
+                          <td className="px-3 py-3">
+                            <button
+                              type="button"
+                              onClick={() => void deletePageViewRow(view.id)}
+                              className="rounded-md p-1 text-red-500 transition hover:text-red-700"
+                              aria-label="Delete page view"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -633,21 +817,22 @@ const AdminDashboard = () => {
             {pageViewsLoading ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">Loading active page views...</div>
             ) : livePageViews.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">No active page views in the last 30 minutes.</div>
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">No active page views in the last 10 minutes.</div>
             ) : (
               livePageViews.slice(0, 8).map((view: any) => {
-                const page = view.page || "/";
+                const page = view.page || view.path || "/";
                 const ageMinutes = Math.max(0, Math.floor((Date.now() - new Date(view.created_at).getTime()) / 60000));
+                const isLive = view.created_at && new Date(view.created_at).getTime() > Date.now() - 5 * 60 * 1000;
                 return (
                   <div key={view.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <div>
                           <p className="text-sm font-medium text-slate-900">{ageMinutes === 0 ? "Just now" : `${ageMinutes} min ago`} viewing {page}</p>
-                          <p className="max-w-[190px] truncate text-[10px] text-slate-500">Device unavailable</p>
+                          <p className="max-w-[190px] truncate text-[10px] text-slate-500">{isLive ? "LIVE" : "Recent"}</p>
                         </div>
                       </div>
-                      <Monitor className="h-4 w-4 text-teal-600" />
+                      <Monitor className={`h-4 w-4 ${isLive ? "text-green-600" : "text-teal-600"}`} />
                     </div>
                   </div>
                 );

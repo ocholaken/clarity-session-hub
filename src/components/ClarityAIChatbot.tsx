@@ -4,6 +4,36 @@ import { supabase } from "@/integrations/supabase/client";
 
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
 
+const STORAGE_KEY = "visitor_id";
+const SESSION_KEY = "session_id";
+const LEGACY_SESSION_KEY = "clarity_session_id";
+
+const getVisitorId = () => {
+  if (typeof window === "undefined") return null;
+
+  let visitorId = window.localStorage.getItem(STORAGE_KEY) || window.localStorage.getItem("clarity_visitor_id");
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    window.localStorage.setItem(STORAGE_KEY, visitorId);
+  }
+  window.localStorage.setItem("clarity_visitor_id", visitorId);
+
+  return visitorId;
+};
+
+const getSessionId = () => {
+  if (typeof window === "undefined") return null;
+
+  let sessionId = window.localStorage.getItem(SESSION_KEY) || window.localStorage.getItem(LEGACY_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    window.localStorage.setItem(SESSION_KEY, sessionId);
+  }
+  window.localStorage.setItem(LEGACY_SESSION_KEY, sessionId);
+
+  return sessionId;
+};
+
 const initialMessage: ChatMessage = {
   id: "welcome",
   role: "assistant",
@@ -29,9 +59,25 @@ const ClarityAIChatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const saveMessage = async (userId: string | null, message: string, isAi: boolean) => {
-    if (!userId) return;
-    await supabase.from("ai_chat_history").insert({ user_id: userId, message, is_ai: isAi });
+  const saveAiChatLog = async (userMessage: string, aiReply: string) => {
+    const sessionId = window.localStorage.getItem("session_id") || crypto.randomUUID();
+    window.localStorage.setItem("session_id", sessionId);
+
+    const { data, error } = await (supabase as any).from("ai_chat_logs").insert({
+      session_id: sessionId,
+      visitor_id: window.localStorage.getItem("session_id"),
+      page: window.location.pathname,
+      user_message: userMessage,
+      message: userMessage,
+      ai_response: aiReply,
+      response: aiReply,
+      created_at: new Date().toISOString(),
+    });
+
+    console.log("AI log insert:", data, error);
+    if (error) {
+      console.error("ai_chat_log insert failed", error);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -45,10 +91,6 @@ const ClarityAIChatbot = () => {
     setMessages(history);
     setLoading(true);
 
-    const { data: authData } = await supabase.auth.getUser();
-    const userId = authData.user?.id ?? null;
-    await saveMessage(userId, message, false);
-
     try {
       const { data, error } = await supabase.functions.invoke("clarity-ai-chat", {
         body: {
@@ -58,8 +100,9 @@ const ClarityAIChatbot = () => {
       if (error) throw error;
       const reply = data?.reply;
       if (typeof reply !== "string" || !reply.trim()) throw new Error("Clarity AI returned no reply");
+
+      await saveAiChatLog(message, reply);
       setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
-      await saveMessage(userId, reply, true);
     } catch (error) {
       console.error("Clarity AI request failed", error);
       setMessages((current) => [...current, { id: crypto.randomUUID(), role: "assistant", content: "I am unable to respond right now. Please try again in a moment." }]);

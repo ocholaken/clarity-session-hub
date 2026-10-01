@@ -20,11 +20,11 @@ import Counselors from "./pages/Counselors";
 import Book from "./pages/Book";
 import MyBookings from "./pages/MyBookings";
 import Admin from "./pages/Admin";
+import SaturdaySessions from "./pages/SaturdaySessions";
 import ProtectedBooking from "./components/ProtectedBooking";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import ProtectedAdminRoute from "./components/admin/ProtectedAdminRoute";
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminServices from "./pages/admin/AdminServices";
@@ -33,8 +33,56 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import ClarityAIChatbot from "./components/ClarityAIChatbot";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
+import { useAnonymousTracking } from "./hooks/useAnonymousTracking";
 
 const queryClient = new QueryClient();
+
+const AppShell = () => {
+  useAnonymousTracking();
+
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/counselors" element={<Counselors />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/book" element={<ProtectedBooking><Book /></ProtectedBooking>} />
+        <Route path="/booking" element={<ProtectedBooking><Book /></ProtectedBooking>} />
+        <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/sessions/saturday" element={<SaturdaySessions />} />
+
+        {/* Admin area — not linked from the public site */}
+        <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/dashboard" element={<Admin />} />
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin/*" element={<AdminLayout />}>
+            <Route path="appointments" element={<AdminAppointments />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="services" element={<AdminServices />} />
+            <Route path="messages" element={<AdminMessages />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <ClarityAIChatbot />
+      <FloatingWhatsApp />
+    </>
+  );
+};
 
 const App = () => (
   <React.StrictMode>
@@ -42,43 +90,7 @@ const App = () => (
       <TooltipProvider>
         <BrowserRouter>
           <AdminAuthProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/counselors" element={<Counselors />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/book" element={<ProtectedBooking><Book /></ProtectedBooking>} />
-              <Route path="/booking" element={<ProtectedBooking><Book /></ProtectedBooking>} />
-              <Route path="/my-bookings" element={<MyBookings />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-
-              {/* Admin area — not linked from the public site */}
-              <Route path="/admin/login" element={<Login />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route element={<ProtectedAdminRoute />}>
-                <Route path="/admin/*" element={<AdminLayout />}>
-                  <Route path="appointments" element={<AdminAppointments />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="services" element={<AdminServices />} />
-                  <Route path="messages" element={<AdminMessages />} />
-                  <Route path="reports" element={<AdminReports />} />
-                  <Route path="settings" element={<AdminSettingsPage />} />
-                </Route>
-              </Route>
-
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <ClarityAIChatbot />
-            <FloatingWhatsApp />
+            <AppShell />
           </AdminAuthProvider>
         </BrowserRouter>
       </TooltipProvider>

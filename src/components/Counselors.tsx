@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { handleBookSession } from "@/lib/booking";
+import { trackCounselorView } from "@/hooks/useAnonymousTracking";
 import { BadgeCheck, Globe, Banknote, CalendarCheck } from "lucide-react";
 import sarahImage from "../../Sarah Akoth.jpg";
 import paulineImage from "../../Pauline Oyuga.jpg";
@@ -25,7 +26,7 @@ const counselors = [
     specialties: ["Relationships", "Couples", "Family Dynamics"],
     description: "With a compassionate approach, Pauline helps couples and families rebuild communication and strengthen their bonds through proven therapeutic techniques.",
     languages: "English",
-    price: "KSh 4,000 / session",
+    price: "KSh 3,000 / session",
     availability: "Currently unavailable",
   },
   {
@@ -53,7 +54,7 @@ const Counselors = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {counselors.map((counselor, index) => (
-            <Card key={index} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm h-full flex flex-col transition-shadow duration-300 hover:shadow-lg">
+            <Card key={index} onClick={() => void trackCounselorView(counselor.name.trim())} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm h-full flex flex-col transition-shadow duration-300 hover:shadow-lg">
               <div className="relative h-64 overflow-hidden">
                 <img 
                   src={counselor.image} 
