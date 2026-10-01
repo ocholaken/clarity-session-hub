@@ -55,25 +55,61 @@ const Services = () => {
     event.preventDefault();
     setEnrolling(true);
     try {
-      const { error } = await (supabase as any).from("saturday_sessions_registrations").insert({
+      const registrationData = {
         name: registration.name.trim(),
         phone: registration.phone.trim(),
-        intent: registration.intent.trim(),
+        mpesa_phone: registration.phone.trim(),
+        intent: registration.intent.trim() || "Saturday mentorship",
         service_type: "saturday_mentorship",
         is_online: true,
         price: 0,
         deposit: 200,
         is_free_pilot: true,
         status: "pending",
-      });
+      };
 
-      if (error) throw error;
+      const { error: registrationError } = await (supabase as any)
+        .from("saturday_free_pilot_registrations")
+        .insert([registrationData]);
+
+      if (registrationError) {
+        console.error("Saturday free-pilot registration insert failed", registrationError);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        const nextSaturday = new Date();
+        const daysUntilSaturday = (6 - nextSaturday.getDay() + 7) % 7 || 7;
+        nextSaturday.setDate(nextSaturday.getDate() + daysUntilSaturday);
+        const bookingDate = `${nextSaturday.getFullYear()}-${String(nextSaturday.getMonth() + 1).padStart(2, "0")}-${String(nextSaturday.getDate()).padStart(2, "0")}`;
+        const { error: bookingError } = await (supabase as any).from("bookings").insert([{
+          user_id: user?.id ?? null,
+          counselor_name: "Saturday Mentorship & Personal Development",
+          booking_date: bookingDate,
+          booking_time: "10:00 AM EAT",
+          client_name: registrationData.name,
+          client_phone: registrationData.phone,
+          mpesa_phone: registrationData.mpesa_phone,
+          intent: registrationData.intent,
+          service_type: registrationData.service_type,
+          is_online: registrationData.is_online,
+          is_free_pilot: registrationData.is_free_pilot,
+          price: registrationData.price,
+          deposit: registrationData.deposit,
+          status: registrationData.status,
+        }]);
+
+        if (bookingError) {
+          console.error("Saturday free-pilot bookings fallback failed", bookingError);
+          toast.error(`Error: ${bookingError.message || registrationError.message}`);
+          return;
+        }
+      }
+
       setEnrollOpen(false);
       setRegistration({ name: "", phone: "", intent: "" });
       toast.success("Spot reserved! Send KES 200 to confirm. Zoom link will be sent via WhatsApp.");
     } catch (error) {
       console.error("Saturday mentorship reservation failed", error);
-      toast.error("Could not reserve your spot. Please try again.");
+      toast.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setEnrolling(false);
     }
