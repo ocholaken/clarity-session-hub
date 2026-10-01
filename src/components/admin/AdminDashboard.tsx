@@ -11,6 +11,7 @@ const tabs = [
   { id: "payments", label: "Payments" },
   { id: "messages", label: "Messages" },
   { id: "ai_conversations", label: "AI Conversations" },
+  { id: "live_visitors", label: "Live Visitors" },
   { id: "content", label: "Content Engine Live" },
   { id: "saturday", label: "Saturday Sessions" },
 ];
@@ -32,25 +33,24 @@ const AdminDashboard = () => {
   const [payments, setPayments] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [aiConversations, setAiConversations] = useState<any[]>([]);
-  const [anonymousVisitors, setAnonymousVisitors] = useState<any[]>([]);
+  const [livePageViews, setLivePageViews] = useState<any[]>([]);
+  const [activePageViewSessions, setActivePageViewSessions] = useState(0);
+  const [pageViewsLoading, setPageViewsLoading] = useState(true);
   const [saturdayRegistrations, setSaturdayRegistrations] = useState<any[]>([]);
   const [saturdayTotal, setSaturdayTotal] = useState(0);
   const [saturdayPending, setSaturdayPending] = useState(0);
   const [saturdayConfirmed, setSaturdayConfirmed] = useState(0);
-  const [recentSaturdayReservations, setRecentSaturdayReservations] = useState(0);
   const [saturdayLoading, setSaturdayLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const loadSaturdayData = async () => {
-    const activeSince = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const [rowsRes, pendingRes, confirmedRes, recentRes] = await Promise.all([
+    const [rowsRes, pendingRes, confirmedRes] = await Promise.all([
       (supabase as any).from("saturday_free_pilot_registrations").select("id, name, phone, intent, status, created_at", { count: "exact" }).order("created_at", { ascending: false }),
       (supabase as any).from("saturday_free_pilot_registrations").select("id", { count: "exact", head: true }).eq("status", "pending"),
       (supabase as any).from("saturday_free_pilot_registrations").select("id", { count: "exact", head: true }).eq("status", "confirmed"),
-      (supabase as any).from("saturday_free_pilot_registrations").select("id", { count: "exact", head: true }).gt("created_at", activeSince),
     ]);
 
-    const queryError = rowsRes.error || pendingRes.error || confirmedRes.error || recentRes.error;
+    const queryError = rowsRes.error || pendingRes.error || confirmedRes.error;
     if (queryError) {
       console.error("Saturday registrations load failed", queryError);
       toast.error(`Could not load Saturday registrations: ${queryError.message}`);
@@ -62,36 +62,36 @@ const AdminDashboard = () => {
     setSaturdayTotal(rowsRes.count ?? 0);
     setSaturdayPending(pendingRes.count ?? 0);
     setSaturdayConfirmed(confirmedRes.count ?? 0);
-    setRecentSaturdayReservations(recentRes.count ?? 0);
     setSaturdayLoading(false);
   };
 
-  const refreshLiveVisitors = async () => {
-    const activeSince = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const { data, error } = await (supabase as any)
-      .from("anonymous_visitors")
-      .select("visitor_id, last_seen, last_page, device, pages_viewed")
-      .gt("last_seen", activeSince)
-      .order("last_seen", { ascending: false })
-      .limit(20);
+  const loadLivePageViews = async () => {
+    const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const [pageViewsRes, activeSessionsRes] = await Promise.all([
+      (supabase as any).from("page_views").select("id, page, session_id, created_at").gt("created_at", since).order("created_at", { ascending: false }).limit(100),
+      (supabase as any).rpc("count_active_page_view_sessions"),
+    ]);
 
-    if (error) {
-      console.error("Live visitor refresh failed", error);
+    if (pageViewsRes.error || activeSessionsRes.error) {
+      const error = pageViewsRes.error || activeSessionsRes.error;
+      console.error("Live page-view load failed", error);
+      setPageViewsLoading(false);
       return;
     }
-    setAnonymousVisitors(data ?? []);
+
+    setLivePageViews(pageViewsRes.data ?? []);
+    setActivePageViewSessions(Number(activeSessionsRes.data ?? 0));
+    setPageViewsLoading(false);
   };
 
   const loadData = async () => {
     try {
-      const activeSince = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const [profilesRes, bookingsRes, messagesRes, paymentsRes, aiConversationsRes, visitorsRes] = await Promise.all([
+      const [profilesRes, bookingsRes, messagesRes, paymentsRes, aiConversationsRes] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("bookings").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("contact_messages").select("*").order("created_at", { ascending: false }),
         supabase.from("payments").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("ai_conversations").select("*").order("created_at", { ascending: false }).limit(20),
-        (supabase as any).from("anonymous_visitors").select("visitor_id, last_seen, last_page, device, pages_viewed").gt("last_seen", activeSince).order("last_seen", { ascending: false }).limit(20),
       ]);
 
       const profileRows = profilesRes.data ?? [];
@@ -99,7 +99,6 @@ const AdminDashboard = () => {
       const messageRows = messagesRes.data ?? [];
       const paymentRows = paymentsRes.data ?? [];
       const aiConversationRows = aiConversationsRes.data ?? [];
-      const visitorRows = visitorsRes.data ?? [];
 
       setUsers(profileRows.length > 0 ? profileRows : Array.from({ length: 6 }, (_, index) => ({
         id: `fallback-user-${index + 1}`,
@@ -133,7 +132,6 @@ const AdminDashboard = () => {
       })));
 
       setAiConversations(aiConversationRows);
-      setAnonymousVisitors(visitorRows);
     } catch (error) {
       console.error("Dashboard load error", error);
       toast.error("Unable to load dashboard data.");
@@ -145,6 +143,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     void loadData();
     void loadSaturdayData();
+    void loadLivePageViews();
   }, []);
 
   useEffect(() => {
@@ -156,7 +155,7 @@ const AdminDashboard = () => {
         toast.success("New AI conversation received");
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "page_views" }, () => {
-        void refreshLiveVisitors();
+        void loadLivePageViews();
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "saturday_free_pilot_registrations" }, () => {
         void loadSaturdayData();
@@ -499,6 +498,44 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {activeTab === "live_visitors" && (
+            <div>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Live Visitors</h3>
+                  <p className="text-sm text-slate-500">Page views from the last 30 minutes, newest first</p>
+                </div>
+                <span className="rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">{activePageViewSessions} active sessions</span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="min-w-full text-sm">
+                  <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="px-3 py-3">Page</th>
+                      <th className="px-3 py-3">Session</th>
+                      <th className="px-3 py-3">Device</th>
+                      <th className="px-3 py-3">Viewed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageViewsLoading ? (
+                      <tr><td colSpan={4} className="px-3 py-8 text-center text-slate-500">Loading page views...</td></tr>
+                    ) : livePageViews.length === 0 ? (
+                      <tr><td colSpan={4} className="px-3 py-8 text-center text-slate-500">No page views in the last 30 minutes.</td></tr>
+                    ) : livePageViews.map((view: any) => (
+                      <tr key={view.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                        <td className="px-3 py-3 font-medium text-slate-900">{view.page || "/"}</td>
+                        <td className="px-3 py-3 font-mono text-xs text-slate-500">{view.session_id ? `${String(view.session_id).slice(0, 12)}…` : "Unknown session"}</td>
+                        <td className="px-3 py-3 text-slate-500">Device unavailable</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-slate-500">{view.created_at ? new Date(view.created_at).toLocaleString() : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {activeTab === "content" && (
             <div>
               <h3 className="mb-4 text-lg font-semibold text-slate-900">Content Engine Live</h3>
@@ -587,35 +624,30 @@ const AdminDashboard = () => {
               <h3 className="mt-1 text-lg font-semibold text-slate-900">Active in last 5 minutes</h3>
             </div>
             <div className="flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-              {recentSaturdayReservations > 0 && <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" aria-label="Active reservations" />}
-              {recentSaturdayReservations}
+              {activePageViewSessions > 0 && <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" aria-label="Active visitors" />}
+              {activePageViewSessions}
             </div>
           </div>
 
           <div className="mt-4 space-y-3">
-            {anonymousVisitors.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">Waiting for anonymous activity.</div>
+            {pageViewsLoading ? (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">Loading active page views...</div>
+            ) : livePageViews.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-400">No active page views in the last 30 minutes.</div>
             ) : (
-              anonymousVisitors.map((visitor: any) => {
-                const device = visitor.device || "Unknown device";
-                const DeviceIcon = /tablet|ipad/i.test(device) ? TabletSmartphone : /mobile|android|iphone/i.test(device) ? Smartphone : Monitor;
-                const lastSeen = visitor.last_seen;
-
+              livePageViews.slice(0, 8).map((view: any) => {
+                const page = view.page || "/";
+                const ageMinutes = Math.max(0, Math.floor((Date.now() - new Date(view.created_at).getTime()) / 60000));
                 return (
-                  <div key={visitor.visitor_id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div key={view.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-[10px] font-semibold text-white">{String(visitor.visitor_id || "ANON").slice(0, 6).toUpperCase()}</span>
                         <div>
-                          <p className="text-sm font-medium text-slate-900">{visitor.last_page || "/"}</p>
-                          <p className="max-w-[190px] truncate text-[10px] text-slate-500" title={device}>{device}</p>
+                          <p className="text-sm font-medium text-slate-900">{ageMinutes === 0 ? "Just now" : `${ageMinutes} min ago`} viewing {page}</p>
+                          <p className="max-w-[190px] truncate text-[10px] text-slate-500">Device unavailable</p>
                         </div>
                       </div>
-                      <DeviceIcon className="h-4 w-4 text-teal-600" />
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-xs text-slate-500">{visitor.pages_viewed ?? 0} pages viewed</span>
-                      <span className="text-xs text-slate-500">{lastSeen ? new Date(lastSeen).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "just now"}</span>
+                      <Monitor className="h-4 w-4 text-teal-600" />
                     </div>
                   </div>
                 );
