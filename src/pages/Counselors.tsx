@@ -10,7 +10,7 @@ import { handleBookSession } from "@/lib/booking";
 import kennethImage from "./kenneth.jpg";
 import sarahImage from "../../Sarah Akoth.jpg";
 import anneImage from "../../counselor1.jpg.jpeg";
-import bellaImage from "../../Bela.jpg";
+import bellaImage from "../ballalind.jpeg";
 import paulineImage from "../../Pauline Oyuga.jpg";
 
 const counselors = [
