@@ -5,17 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { handleBookSession } from "@/lib/booking";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
+import type { FormEvent } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const Services = () => {
-  const navigate = useNavigate();
   const [enrollOpen, setEnrollOpen] = useState(false);
-  const [enrollmentPlan, setEnrollmentPlan] = useState<"single" | "program">("program");
   const [enrolling, setEnrolling] = useState(false);
+  const [registration, setRegistration] = useState({ name: "", phone: "", intent: "" });
 
   const servicesList = [
     {
@@ -48,39 +51,29 @@ const Services = () => {
     }
   ];
 
-  const handleEnroll = async () => {
+  const handleEnroll = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setEnrolling(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please sign in to book an online session");
-        navigate("/login", { state: { from: "/services" } });
-        return;
-      }
-
-      const nextSaturday = new Date();
-      const daysUntilSaturday = (6 - nextSaturday.getDay() + 7) % 7 || 7;
-      nextSaturday.setDate(nextSaturday.getDate() + daysUntilSaturday);
-      const bookingDate = `${nextSaturday.getFullYear()}-${String(nextSaturday.getMonth() + 1).padStart(2, "0")}-${String(nextSaturday.getDate()).padStart(2, "0")}`;
-      const amount = enrollmentPlan === "program" ? 6000 : 2000;
-      const { error } = await (supabase as any).from("bookings").insert({
-        user_id: user.id,
-        counselor_name: "Saturday Mentorship & Personal Development",
-        booking_date: bookingDate,
-        booking_time: "10:00 AM EAT",
+      const { error } = await (supabase as any).from("saturday_sessions_registrations").insert({
+        name: registration.name.trim(),
+        phone: registration.phone.trim(),
+        intent: registration.intent.trim(),
         service_type: "saturday_mentorship",
         is_online: true,
-        amount,
+        price: 0,
+        deposit: 200,
+        is_free_pilot: true,
         status: "pending",
       });
 
       if (error) throw error;
       setEnrollOpen(false);
-      toast.success("Your online session enrollment is pending confirmation");
-      navigate("/my-bookings");
+      setRegistration({ name: "", phone: "", intent: "" });
+      toast.success("Spot reserved! Send KES 200 to confirm. Zoom link will be sent via WhatsApp.");
     } catch (error) {
-      console.error("Saturday mentorship enrollment failed", error);
-      toast.error("Could not create your booking. Please try again.");
+      console.error("Saturday mentorship reservation failed", error);
+      toast.error("Could not reserve your spot. Please try again.");
     } finally {
       setEnrolling(false);
     }
@@ -121,26 +114,35 @@ const Services = () => {
                 </Card>
               ))}
 
-              <Card className="overflow-hidden bg-card rounded-2xl border-2 border-primary shadow-md shadow-primary/10 transition-shadow">
+              <Card className="overflow-hidden bg-card rounded-2xl border-2 border-teal-500/30 shadow-md shadow-primary/10 transition-shadow">
                 <div className="p-6 md:p-8">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                    <Badge variant="secondary">ONLINE</Badge>
                     <Badge variant="secondary" className="gap-2">
-                      <span className="h-2 w-2 rounded-full bg-teal-500" aria-hidden="true" />
-                      LIVE ON ZOOM
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" aria-hidden="true" />
+                      FREE PILOT
+                    </Badge>
+                    <Badge variant="secondary" className="gap-2">
+                      LIVE ON ZOOM · ONLINE
                     </Badge>
                   </div>
-                  <p className="mb-2 text-sm font-semibold text-primary">Online Live Sessions</p>
+                  <p className="mb-2 text-sm font-semibold text-primary">Free Pilot Launch — Online Live Sessions</p>
                   <h3 className="mb-2 text-2xl font-semibold text-foreground">Saturday Mentorship &amp; Personal Development</h3>
                   <p className="mb-4 text-muted-foreground">Build momentum with practical guidance and a supportive peer group.</p>
                   <ul className="mb-5 list-disc space-y-1 pl-5 text-sm text-foreground">
                     <li>Goal Setting &amp; Accountability</li>
                     <li>Weekly Peer Workshops</li>
-                    <li>1-on-1 Mentor Check-ins</li>
+                    <li>1-on-1 Mentor Check-ins (Google Meet)</li>
+                    <li>Recorded replays included</li>
                   </ul>
-                  <p className="text-sm text-muted-foreground">Every Saturday · 10am-12pm EAT · 6-week program</p>
-                  <div className="mt-6 flex items-center justify-end">
-                    <Button variant="default" onClick={() => setEnrollOpen(true)}>Enroll Now</Button>
+                  <div className="mb-3 flex flex-wrap items-baseline gap-2">
+                    <p className="text-2xl font-bold text-primary">FREE - Pilot Session</p>
+                    <p className="text-sm text-muted-foreground line-through">Normally KES 2,000</p>
+                  </div>
+                  <p className="mb-4 text-sm text-muted-foreground">KES 200 refundable deposit to reserve (M-Pesa) - refunded after you join live</p>
+                  <p className="text-sm text-muted-foreground">This Saturday · 10am-12pm EAT · 20 spots only · Online</p>
+                  <div className="mt-6">
+                    <Button variant="default" size="lg" className="w-full" onClick={() => setEnrollOpen(true)}>Reserve Free Spot →</Button>
+                    <p className="mt-2 text-center text-xs text-muted-foreground">Join from anywhere · Zoom link via WhatsApp</p>
                   </div>
                 </div>
               </Card>
@@ -162,23 +164,29 @@ const Services = () => {
       <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Saturday Mentorship &amp; Personal Development</DialogTitle>
-            <DialogDescription>Online live sessions every Saturday, 10am-12pm EAT.</DialogDescription>
+            <DialogTitle>Reserve Your Free Spot - Saturday Mentorship</DialogTitle>
+            <DialogDescription>Complete your details to reserve a place in the free online pilot.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2" role="group" aria-label="Choose enrollment option">
-              <Button type="button" variant={enrollmentPlan === "single" ? "default" : "outline"} onClick={() => setEnrollmentPlan("single")}>
-                Single Saturday · KES 2,000
-              </Button>
-              <Button type="button" variant={enrollmentPlan === "program" ? "default" : "outline"} onClick={() => setEnrollmentPlan("program")}>
-                6 weeks · KES 6,000
-              </Button>
+          <form className="space-y-4" onSubmit={handleEnroll}>
+            <div className="space-y-2">
+              <Label htmlFor="pilot-name">Full Name</Label>
+              <Input id="pilot-name" autoComplete="name" required value={registration.name} onChange={(event) => setRegistration({ ...registration, name: event.target.value })} />
             </div>
-            <p className="text-sm text-muted-foreground">Platform: Zoom &amp; Google Meet · Join from anywhere.</p>
-            <Button type="button" variant="default" className="w-full" disabled={enrolling} onClick={() => void handleEnroll()}>
-              {enrolling ? "Booking..." : "Book Online Session"}
+            <div className="space-y-2">
+              <Label htmlFor="pilot-phone">Phone (M-Pesa)</Label>
+              <Input id="pilot-phone" type="tel" autoComplete="tel" required value={registration.phone} onChange={(event) => setRegistration({ ...registration, phone: event.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pilot-intent">What do you want help with?</Label>
+              <Textarea id="pilot-intent" required value={registration.intent} onChange={(event) => setRegistration({ ...registration, intent: event.target.value })} />
+            </div>
+            <div className="rounded-lg border border-border bg-muted p-4 text-sm text-foreground">
+              This pilot is FREE. KES 200 deposit confirms your spot and is refunded when you attend live. Lipa na M-Pesa details will be shown after.
+            </div>
+            <Button type="submit" variant="default" className="w-full" disabled={enrolling}>
+              {enrolling ? "Reserving..." : "Reserve Now"}
             </Button>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
