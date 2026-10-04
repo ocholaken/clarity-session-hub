@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -35,6 +35,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -78,7 +79,7 @@ const Register = () => {
     toast.success("Account created", {
       description: "You can now sign in to your account.",
     });
-    navigate("/login");
+    navigate(`/login${location.search}`);
   };
 
   return (

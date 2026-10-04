@@ -152,6 +152,39 @@ export type Database = {
           },
         ]
       }
+      counselors: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          is_active: boolean
+          phone: string | null
+          specialty: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          specialty?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          specialty?: string | null
+        }
+        Relationships: []
+      }
       content_bodies: {
         Row: {
           body: string | null
@@ -363,33 +396,48 @@ export type Database = {
       }
       services: {
         Row: {
+          audience: string | null
+          badge: string | null
+          category: string
           created_at: string
           description: string | null
           duration_minutes: number
           id: string
           is_active: boolean
+          is_free: boolean
           name: string
           price: number
+          price_label: string | null
           updated_at: string
         }
         Insert: {
+          audience?: string | null
+          badge?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           duration_minutes?: number
           id?: string
           is_active?: boolean
+          is_free?: boolean
           name: string
           price?: number
+          price_label?: string | null
           updated_at?: string
         }
         Update: {
+          audience?: string | null
+          badge?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           duration_minutes?: number
           id?: string
           is_active?: boolean
+          is_free?: boolean
           name?: string
           price?: number
+          price_label?: string | null
           updated_at?: string
         }
         Relationships: []

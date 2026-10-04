@@ -4,6 +4,7 @@ import { Bell, Calendar, Check, Clock3, CreditCard, Download, ExternalLink, Filt
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import FreeBookingsPanel from "@/components/admin/FreeBookingsPanel";
 
 const tabs = [
   { id: "users", label: "Users" },
@@ -22,7 +23,7 @@ const deviceOptions = ["All devices", "Mobile", "Tablet", "Desktop"];
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { signOut } = useAdminAuth();
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("bookings");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Any status");
   const [deviceFilter, setDeviceFilter] = useState("All devices");
@@ -224,12 +225,7 @@ const AdminDashboard = () => {
         created_at: new Date(Date.now() - index * 86400000).toISOString(),
       })));
 
-      setBookings(bookingRows.length > 0 ? bookingRows : Array.from({ length: 9 }, (_, index) => ({
-        id: `fallback-booking-${index + 1}`,
-        client_name: ["Aisha", "Brian", "Njeri", "Sam", "Leila", "John", "Mariam", "Alex", "Faith"][index],
-        service: ["Therapy Session", "Couples Coaching", "Career Guidance", "Stress Recovery", "Family Counseling", "Mindfulness Check-in", "Trauma Support", "Goal Clarity", "Confidence Coaching"][index],
-        status: ["pending", "confirmed", "pending", "completed", "pending", "confirmed", "pending", "confirmed", "cancelled"][index],
-      })));
+      setBookings(bookingRows);
 
       setMessages(messageRows.length > 0 ? messageRows : Array.from({ length: 8 }, (_, index) => ({
         id: `fallback-message-${index + 1}`,
@@ -309,9 +305,9 @@ const AdminDashboard = () => {
 
   const stats = [
     { label: "Total Users", value: users.length || 6, icon: Users, trend: "+12%" },
-    { label: "Total Bookings", value: bookings.length || 9, icon: Calendar, trend: "+9%" },
+    { label: "Total Bookings", value: bookings.length, icon: Calendar, trend: "+9%" },
     { label: "Total Revenue", value: `KES ${Number(totalRevenue || 0).toLocaleString()}`, icon: CreditCard, trend: "0.0%" },
-    { label: "Pending", value: pendingBookings || 3, icon: Clock3, trend: "+3%" },
+    { label: "Pending", value: pendingBookings, icon: Clock3, trend: "+3%" },
     { label: "Total Messages", value: messages.length || 8, icon: Mail, trend: "+8%" },
   ];
 
@@ -363,20 +359,29 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f7fb] p-4 md:p-8">
-      <header className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+    <div className="admin-dashboard min-h-screen w-full min-w-0 bg-[#f6f7fb] p-4 md:p-8">
+      <header className="mb-6 rounded-2xl border border-[#d4af37]/40 bg-[#0a3322] p-4 text-white shadow-[0_18px_45px_rgba(10,51,34,0.2)] md:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Clarity Sessions</p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e6cc75]">Clarity Sessions Hub</p>
+            <div className="mt-1 flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-bold text-white">Clarity Sessions Hub - Admin</h1>
+              <span className="inline-flex items-center rounded-full border border-[#d4af37]/60 bg-[#d4af37]/15 px-3 py-1 text-sm font-bold tabular-nums text-[#f3dc8c]">
+                {bookings.length} bookings
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link to="/" className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-900 hover:text-white">
+            <Link to="/admin/counselors" className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/50 bg-white/5 px-4 py-2 text-sm font-medium text-[#f3dc8c] transition hover:bg-white/10">
+              <Users className="h-4 w-4" />
+              Manage Counselors
+            </Link>
+            <Link to="/" className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10">
               <ExternalLink className="h-4 w-4" />
               View Site
             </Link>
-            <button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+            <button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-full bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#0a3322] transition hover:bg-[#e4c55d]">
               <LogOut className="h-4 w-4" />
               Logout
             </button>
@@ -461,7 +466,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.8fr_0.9fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
           {activeTab === "users" && (
             <div>
               <div className="mb-4 flex items-center justify-between gap-3">
@@ -521,31 +526,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {activeTab === "bookings" && (
-            <div>
-              <h3 className="mb-4 text-lg font-semibold text-slate-900">Bookings</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-[0.18em] text-slate-500">
-                    <tr>
-                      <th className="px-3 py-3">Client</th>
-                      <th className="px-3 py-3">Service</th>
-                      <th className="px-3 py-3">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bookings.map((booking: any) => (
-                      <tr key={booking.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="px-3 py-3 font-medium text-slate-900">{booking.client_name || booking.email || "—"}</td>
-                        <td className="px-3 py-3 text-slate-600">{booking.service || booking.package || "—"}</td>
-                        <td className="px-3 py-3"><span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{booking.status || "pending"}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {activeTab === "bookings" && <FreeBookingsPanel onBookingsChange={setBookings} />}
 
           {activeTab === "payments" && (
             <div>
@@ -731,6 +712,13 @@ const AdminDashboard = () => {
 
           {activeTab === "saturday" && (
             <div>
+              <div className="mb-6">
+                <FreeBookingsPanel
+                  onBookingsChange={setBookings}
+                  title="Saturday Bookings"
+                />
+              </div>
+
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">Saturday Sessions</h3>
@@ -801,7 +789,7 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <aside className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">LIVE VISITORS NOW</p>

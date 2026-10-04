@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/admin/appointments", label: "Appointments", icon: CalendarDays, count: 12 },
   { to: "/admin/users", label: "Users", icon: Users, count: 94 },
   { to: "/admin/services", label: "Services", icon: Briefcase, count: 7 },
+  { to: "/admin/counselors", label: "Manage Counselors", icon: UserRound },
   { to: "/admin/messages", label: "Messages", icon: MessageSquare, count: 3 },
   { to: "/admin/reports", label: "Reports", icon: BarChart3, count: 14 },
   { to: "/admin/settings", label: "Settings", icon: Settings, count: 1 },
@@ -70,9 +72,11 @@ const AdminLayout = () => {
               <Icon className="h-4 w-4" />
               {label}
             </span>
-            <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-300">
-              {count}
-            </span>
+            {count !== undefined && (
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-300">
+                {count}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -52,10 +52,10 @@ const counselors = [
   },
   {
     name: "Kenneth Ochola, LPC",
-    title: "Psychologist, Frontend Developer & AI Architect",
+    title: "Psychologist, Frontend Developer, AI Architect & Legal Adviser",
     image: kennethImage,
-    specialties: ["Psychological Intelligence", "Frontend Engineering", "AI Architecture"],
-    description: "I am a Psychologist by training, a Frontend Developer by craft, and an AI Architect by vision. As Co-Founder of Clarity Session Hub and CEO of Clarity, I build psychologically intelligent, beautifully crafted, human-centered ecosystems where technology understands people.",
+    specialties: ["Psychological Intelligence", "Frontend Engineering", "AI Architecture", "Legal Advisory"],
+    description: "I am a Psychologist by training, a Frontend Developer by craft, an AI Architect by vision, and a Legal Adviser. As Co-Founder of Clarity Session Hub and CEO of Clarity, I build psychologically intelligent, beautifully crafted, human-centered ecosystems where technology understands people.",
     education: "Psychologist by training",
     experience: "Co-Founder, Clarity Session Hub | CEO, Clarity",
     rating: 4.9,
@@ -99,6 +99,7 @@ const specialtyOptions = [
   "Stress Management",
   "Addiction Recovery",
   "Mindfulness",
+  "Legal Advisory",
   "Child Development",
   "Grief & Loss",
   "PTSD"

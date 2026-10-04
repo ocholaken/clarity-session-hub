@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,7 +30,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const redirectPath = localStorage.getItem("redirectAfterLogin");
+  const [searchParams] = useSearchParams();
+  const redirectPath = searchParams.get("redirect") ?? sessionStorage.getItem("redirectAfterLogin");
+  const pendingServiceId = searchParams.get("service");
   const wasRedirected = Boolean(redirectPath);
   const wasResourceRedirected = redirectPath?.startsWith("/resources") ?? false;
   
@@ -61,10 +63,40 @@ const Login = () => {
       .eq("id", signedInUser.id)
       .single();
     sessionStorage.setItem("user", JSON.stringify({ email: data.email.trim() }));
-    const redirectPath = profile?.role === "admin" ? "/admin" : "/";
+    let targetPath = "/";
+    if (
+      profile?.role === "admin" &&
+      !redirectPath &&
+      !pendingServiceId &&
+      !localStorage.getItem("pending_booking_service")
+    ) {
+      targetPath = "/admin";
+    } else {
+      let storedServiceId: string | undefined;
+      const pendingService = localStorage.getItem("pending_booking_service");
+      if (pendingService) {
+        try {
+          const parsed: unknown = JSON.parse(pendingService);
+          if (parsed && typeof parsed === "object" && "id" in parsed && typeof parsed.id === "string") {
+            storedServiceId = parsed.id;
+          }
+        } catch {
+          localStorage.removeItem("pending_booking_service");
+        }
+      }
+
+      const serviceId = pendingServiceId ?? storedServiceId;
+      const requestedRedirect = redirectPath?.startsWith("/") && !redirectPath.startsWith("//")
+        ? redirectPath
+        : "/";
+      const destination = new URL(requestedRedirect, window.location.origin);
+      if (serviceId) destination.searchParams.set("service", serviceId);
+      targetPath = `${destination.pathname}${destination.search}${destination.hash}`;
+    }
     sessionStorage.removeItem("redirectAfterLogin");
+    localStorage.removeItem("pending_booking_service");
     toast.success("Login successful!", { description: "Welcome back to Clarity Sessions!" });
-    navigate(redirectPath);
+    navigate(targetPath);
   };
 
   return (
@@ -157,7 +189,7 @@ const Login = () => {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-lavender-600 hover:underline font-medium">
+                <Link to={`/register${window.location.search}`} className="text-lavender-600 hover:underline font-medium">
                   Sign up
                 </Link>
               </p>

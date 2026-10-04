@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,6 +8,7 @@ interface ProtectedBookingProps {
 }
 
 const ProtectedBooking = ({ children }: ProtectedBookingProps) => {
+  const location = useLocation();
   const [checking, setChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -27,8 +28,9 @@ const ProtectedBooking = ({ children }: ProtectedBookingProps) => {
   }
 
   if (!isLoggedIn) {
-    sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
-    return <Navigate to="/login" replace />;
+    const returnTo = `${location.pathname}${location.search}`;
+    sessionStorage.setItem("redirectAfterLogin", returnTo);
+    return <Navigate to={`/login?redirect=${encodeURIComponent(returnTo)}`} replace />;
   }
 
   return <>{children}</>;

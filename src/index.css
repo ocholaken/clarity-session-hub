@@ -8,6 +8,12 @@
   scrollbar-color: #cbd5e1 transparent;
 }
 
+.admin-dashboard .overflow-x-auto {
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -303,6 +309,14 @@
 }
 
 @layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .bg-gray-50 { background-color: hsl(var(--background)); }
   .bg-gray-100 { background-color: hsl(var(--secondary)); }
   .text-gray-400 { color: hsl(var(--muted-foreground) / 0.7); }

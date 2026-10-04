@@ -5,110 +5,140 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link } from "react-router-dom";
-import { handleBookSession } from "@/lib/booking";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ServiceDirectory from "@/components/ServiceDirectory";
+import type { CatalogService } from "@/lib/service-catalog";
+
+type FreeReservationPayload = Record<string, unknown>;
+type FreeReservationClient = {
+  from: (table: "bookings") => {
+    insert: (values: FreeReservationPayload[]) => PromiseLike<{
+      error: { code?: string; message: string } | null;
+    }>;
+  };
+};
 
 const Services = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [enrollOpen, setEnrollOpen] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [registration, setRegistration] = useState({ name: "", phone: "", intent: "" });
 
-  const servicesList = [
-    {
-      title: "Individual Therapy",
-      description: "One-on-one sessions focused on personal growth and addressing specific challenges.",
-      icon: "👤",
-      price: "KSh 3,500",
-      duration: "50 minutes"
-    },
-    {
-      title: "Couples Counseling",
-      description: "Build stronger relationships through guided sessions for partners.",
-      icon: "👥",
-      price: "KSh 3,500",
-      duration: "80 minutes"
-    },
-    {
-      title: "Family Therapy",
-      description: "Resolve conflicts and improve communication within family units.",
-      icon: "👨‍👩‍👧",
-      price: "KSh 3,000", 
-      duration: "90 minutes"
-    },
-    {
-      title: "Group Therapy",
-      description: "Share experiences and learn from others in a supportive group environment.",
-      icon: "👥👥",
-      price: "KSh 2,500",
-      duration: "120 minutes"
+  useEffect(() => {
+    if (searchParams.get("service") === "free-online-coaching") {
+      setEnrollOpen(true);
+      setSearchParams({}, { replace: true });
     }
-  ];
+  }, [searchParams, setSearchParams]);
+
+  const handleBookNow = async (service: CatalogService) => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      toast.error("Could not verify your sign-in", { description: error.message });
+      return;
+    }
+    if (!user) {
+      localStorage.setItem("pending_booking_service", JSON.stringify(service));
+      navigate(`/login?redirect=${encodeURIComponent("/booking")}&service=${encodeURIComponent(service.id)}`);
+      toast.error("Please log in to book");
+      return;
+    }
+    navigate(`/booking?service=${encodeURIComponent(service.id)}`);
+  };
+
+  const handleReserveFreeSpot = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      toast.error("Could not verify your sign-in", { description: error.message });
+      return;
+    }
+    if (!user) {
+      localStorage.setItem("pending_booking_service", JSON.stringify({ id: "free-online-coaching" }));
+      navigate(`/login?redirect=${encodeURIComponent("/services")}&service=free-online-coaching`);
+      toast.error("Please log in to reserve your free spot");
+      return;
+    }
+    setEnrollOpen(true);
+  };
 
   const handleEnroll = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (registration.phone.trim().length < 10) {
+      toast.error("Phone required! Enter e.g. 0712345678");
+      return;
+    }
     setEnrolling(true);
     try {
-      const registrationData = {
-        name: registration.name.trim(),
-        phone: registration.phone.trim(),
-        mpesa_phone: registration.phone.trim(),
-        intent: registration.intent.trim() || "Saturday mentorship",
-        service_type: "saturday_mentorship",
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        toast.error("Could not verify your sign-in", { description: authError.message });
+        return;
+      }
+      if (!user) {
+        localStorage.setItem("pending_booking_service", JSON.stringify({ id: "free-online-coaching" }));
+        navigate(`/login?redirect=${encodeURIComponent("/services")}&service=free-online-coaching`);
+        toast.error("Please log in to reserve your free spot");
+        return;
+      }
+      const nextSaturday = new Date();
+      const daysUntilSaturday = (6 - nextSaturday.getDay() + 7) % 7 || 7;
+      nextSaturday.setDate(nextSaturday.getDate() + daysUntilSaturday);
+      nextSaturday.setHours(10, 0, 0, 0);
+      const bookingDate = nextSaturday.toISOString();
+      const booking = {
+        user_id: user.id,
+        customer_name: registration.name.trim(),
+        customer_email: user.email ?? "",
+        customer_phone: registration.phone.trim(),
+        client_name: registration.name.trim(),
+        client_email: user.email ?? "",
+        client_phone: registration.phone.trim(),
+        counselor_name: "Online Coaching",
+        service_name: "Online Coaching",
+        service_category: "online",
+        is_free: true,
+        booking_date: bookingDate,
+        booking_time: "10:00 AM",
+        service_type: "online_coaching",
         is_online: true,
-        price: 0,
-        deposit: 200,
         is_free_pilot: true,
+        price: 0,
+        intent: registration.intent.trim() || "Online coaching",
         status: "pending",
       };
+      let { error } = await (supabase as unknown as FreeReservationClient)
+        .from("bookings")
+        .insert([booking]);
 
-      const { error: registrationError } = await (supabase as any)
-        .from("saturday_free_pilot_registrations")
-        .insert([registrationData]);
+      if (error && ["42703", "PGRST204"].includes(error.code) && /price/i.test(error.message)) {
+        const bookingWithoutPrice = { ...booking };
+        delete bookingWithoutPrice.price;
+        ({ error } = await (supabase as unknown as FreeReservationClient)
+          .from("bookings")
+          .insert([bookingWithoutPrice]));
+      }
 
-      if (registrationError) {
-        console.error("Saturday free-pilot registration insert failed", registrationError);
-
-        const { data: { user } } = await supabase.auth.getUser();
-        const nextSaturday = new Date();
-        const daysUntilSaturday = (6 - nextSaturday.getDay() + 7) % 7 || 7;
-        nextSaturday.setDate(nextSaturday.getDate() + daysUntilSaturday);
-        const bookingDate = `${nextSaturday.getFullYear()}-${String(nextSaturday.getMonth() + 1).padStart(2, "0")}-${String(nextSaturday.getDate()).padStart(2, "0")}`;
-        const { error: bookingError } = await (supabase as any).from("bookings").insert([{
-          user_id: user?.id ?? null,
-          counselor_name: "Saturday Mentorship & Personal Development",
-          booking_date: bookingDate,
-          booking_time: "10:00 AM EAT",
-          client_name: registrationData.name,
-          client_phone: registrationData.phone,
-          mpesa_phone: registrationData.mpesa_phone,
-          intent: registrationData.intent,
-          service_type: registrationData.service_type,
-          is_online: registrationData.is_online,
-          is_free_pilot: registrationData.is_free_pilot,
-          price: registrationData.price,
-          deposit: registrationData.deposit,
-          status: registrationData.status,
-        }]);
-
-        if (bookingError) {
-          console.error("Saturday free-pilot bookings fallback failed", bookingError);
-          toast.error(`Error: ${bookingError.message || registrationError.message}`);
-          return;
-        }
+      if (error) {
+        console.error("Online coaching reservation failed", error);
+        toast.error(`Booking failed: ${error.message}`);
+        return;
       }
 
       setEnrollOpen(false);
       setRegistration({ name: "", phone: "", intent: "" });
-      toast.success("Spot reserved! Send KES 200 to confirm. Zoom link will be sent via WhatsApp.");
+      const result = { success: true, message: "Free spot reserved!" };
+      toast.success(result.message);
+      return result;
     } catch (error) {
-      console.error("Saturday mentorship reservation failed", error);
+      console.error("Online coaching reservation failed", error);
       toast.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setEnrolling(false);
@@ -124,7 +154,7 @@ const Services = () => {
             <div className="max-w-3xl mx-auto text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">Our Services</h1>
               <p className="text-xl text-muted-foreground">
-                We offer a range of professional counseling services tailored to your needs. Browse our options below and find the right fit for your journey.
+                Explore our counseling and therapy services, or reserve a free online coaching session.
               </p>
             </div>
           </div>
@@ -132,64 +162,38 @@ const Services = () => {
 
         <section className="py-16">
           <div className="container">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {servicesList.map((service, index) => (
-                <Card key={index} className="overflow-hidden bg-card rounded-2xl border border-border shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="p-6 md:p-8">
-                    <div className="text-4xl mb-4">{service.icon}</div>
-                    <h3 className="text-2xl font-semibold mb-2 text-foreground">{service.title}</h3>
-                    <p className="text-muted-foreground mb-4">{service.description}</p>
-                    <div className="flex justify-between items-center mt-6">
-                      <div>
-                        <p className="text-xl font-bold text-primary">{service.price}</p>
-                        <p className="text-sm text-muted-foreground">{service.duration}</p>
-                      </div>
-                      <Button onClick={handleBookSession} className="bg-primary hover:bg-primary/90 text-primary-foreground">Book Now</Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-
-              <Card className="overflow-hidden bg-card rounded-2xl border-2 border-teal-500/30 shadow-md shadow-primary/10 transition-shadow">
+            <ServiceDirectory onBook={handleBookNow} />
+            <div className="mt-6 px-4 sm:px-0">
+              <Card id="free-online-coaching" className="mx-auto max-w-3xl overflow-hidden rounded-2xl border-2 border-teal-500/30 bg-card p-5 shadow-md shadow-primary/10 transition-shadow">
                 <div className="p-6 md:p-8">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                     <Badge variant="secondary" className="gap-2">
                       <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" aria-hidden="true" />
-                      FREE PILOT
+                      FREE
                     </Badge>
                     <Badge variant="secondary" className="gap-2">
-                      LIVE ON ZOOM · ONLINE
+                      ONLINE COACHING
                     </Badge>
                   </div>
-                  <p className="mb-2 text-sm font-semibold text-primary">Free Pilot Launch — Online Live Sessions</p>
-                  <h3 className="mb-2 text-2xl font-semibold text-foreground">Saturday Mentorship &amp; Personal Development</h3>
-                  <p className="mb-4 text-muted-foreground">Build momentum with practical guidance and a supportive peer group.</p>
+                  <h3 className="mb-2 text-2xl font-semibold text-foreground">Online Coaching</h3>
+                  <p className="mb-4 text-muted-foreground">One-to-one online coaching to help you build clarity, confidence, and momentum.</p>
                   <ul className="mb-5 list-disc space-y-1 pl-5 text-sm text-foreground">
-                    <li>Goal Setting &amp; Accountability</li>
-                    <li>Weekly Peer Workshops</li>
-                    <li>1-on-1 Mentor Check-ins (Google Meet)</li>
-                    <li>Recorded replays included</li>
+                    <li>Personalized online session</li>
+                    <li>Goal setting and practical next steps</li>
+                    <li>Free reservation</li>
                   </ul>
-                  <div className="mb-3 flex flex-wrap items-baseline gap-2">
-                    <p className="text-2xl font-bold text-primary">FREE - Pilot Session</p>
-                    <p className="text-sm text-muted-foreground line-through">Normally KES 2,000</p>
-                  </div>
-                  <p className="mb-4 text-sm text-muted-foreground">KES 200 refundable deposit to reserve (M-Pesa) - refunded after you join live</p>
-                  <p className="text-sm text-muted-foreground">This Saturday · 10am-12pm EAT · 20 spots only · Online</p>
+                  <p className="mb-4 text-2xl font-bold text-primary">FREE</p>
                   <div className="mt-6">
-                    <Button variant="default" size="lg" className="w-full" onClick={() => setEnrollOpen(true)}>Reserve Free Spot →</Button>
-                    <p className="mt-2 text-center text-xs text-muted-foreground">Join from anywhere · Zoom link via WhatsApp</p>
+                    <Button variant="default" size="lg" className="w-full py-3 active:scale-95" onClick={() => void handleReserveFreeSpot()}>Reserve Free Spot</Button>
+                    <p className="mt-2 text-center text-xs text-muted-foreground">No payment required</p>
                   </div>
                 </div>
               </Card>
             </div>
             
-            <div className="mt-16 text-center">
-              <p className="text-muted-foreground mb-6">Not sure which service is right for you?</p>
+            <div className="mt-12 text-center">
               <Link to="/contact">
-                <Button variant="outline" className="border-primary text-primary hover:bg-secondary">
-                  Contact Us for a Consultation
-                </Button>
+                <Button variant="outline" className="border-primary text-primary hover:bg-secondary">Questions? Contact us</Button>
               </Link>
             </div>
           </div>
@@ -198,29 +202,27 @@ const Services = () => {
       <Footer />
 
       <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
-        <DialogContent>
+        <DialogContent className="fixed inset-x-0 bottom-0 top-auto max-h-[90dvh] translate-x-0 translate-y-0 overflow-y-auto rounded-t-2xl p-4 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:max-h-[90vh] sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl sm:p-6">
           <DialogHeader>
-            <DialogTitle>Reserve Your Free Spot - Saturday Mentorship</DialogTitle>
-            <DialogDescription>Complete your details to reserve a place in the free online pilot.</DialogDescription>
+            <DialogTitle>Reserve Your Free Online Coaching Spot</DialogTitle>
+            <DialogDescription>Complete your details to reserve a free online coaching session.</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleEnroll}>
             <div className="space-y-2">
               <Label htmlFor="pilot-name">Full Name</Label>
-              <Input id="pilot-name" autoComplete="name" required value={registration.name} onChange={(event) => setRegistration({ ...registration, name: event.target.value })} />
+              <Input className="text-base" id="pilot-name" autoComplete="name" required value={registration.name} onChange={(event) => setRegistration({ ...registration, name: event.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pilot-phone">Phone (M-Pesa)</Label>
-              <Input id="pilot-phone" type="tel" autoComplete="tel" required value={registration.phone} onChange={(event) => setRegistration({ ...registration, phone: event.target.value })} />
+              <Label htmlFor="pilot-phone">Phone</Label>
+              <Input className="text-base" id="pilot-phone" name="phone" type="tel" autoComplete="tel" required value={registration.phone} onChange={(event) => setRegistration({ ...registration, phone: event.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pilot-intent">What do you want help with?</Label>
-              <Textarea id="pilot-intent" required value={registration.intent} onChange={(event) => setRegistration({ ...registration, intent: event.target.value })} />
+              <Label htmlFor="pilot-intent">What would you like to focus on?</Label>
+              <Textarea className="text-base" id="pilot-intent" required value={registration.intent} onChange={(event) => setRegistration({ ...registration, intent: event.target.value })} />
             </div>
-            <div className="rounded-lg border border-border bg-muted p-4 text-sm text-foreground">
-              This pilot is FREE. KES 200 deposit confirms your spot and is refunded when you attend live. Lipa na M-Pesa details will be shown after.
-            </div>
+            <div className="rounded-lg border border-border bg-muted p-4 text-sm text-foreground">This online coaching session is free. No payment is required.</div>
             <Button type="submit" variant="default" className="w-full" disabled={enrolling}>
-              {enrolling ? "Reserving..." : "Reserve Now"}
+              {enrolling ? "Reserving..." : "Reserve Free Spot"}
             </Button>
           </form>
         </DialogContent>

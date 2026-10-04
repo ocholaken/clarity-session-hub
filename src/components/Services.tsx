@@ -1,50 +1,27 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Heart, HeartHandshake, Home, GraduationCap, Flower2, Briefcase } from "lucide-react";
-
-const services = [
-  {
-    title: "Individual Counseling",
-    description: "One-on-one sessions focused on personal growth, mental health, and overcoming challenges.",
-    icon: Heart,
-  },
-  {
-    title: "Couples Therapy",
-    description: "Strengthen relationships, improve communication, and resolve conflicts with professional guidance.",
-    icon: HeartHandshake,
-  },
-  {
-    title: "Family Counseling",
-    description: "Address family dynamics, improve relationships, and create a healthier home environment.",
-    icon: Home,
-  },
-  {
-    title: "Student Counseling",
-    description: "Support for academic pressure, exam stress, and life decisions for students at every level.",
-    icon: GraduationCap,
-  },
-  {
-    title: "Grief Support",
-    description: "Compassionate guidance to help you process loss and gently find your way forward.",
-    icon: Flower2,
-  },
-  {
-    title: "Career Guidance",
-    description: "Navigate career transitions, set goals, and discover your professional purpose and path.",
-    icon: Briefcase,
-  },
-];
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import ServiceDirectory from "@/components/ServiceDirectory";
+import type { CatalogService } from "@/lib/service-catalog";
 
 const Services = () => {
-  const handleBookSession = () => {
-    const isLoggedIn = localStorage.getItem("user") || localStorage.getItem("token");
-    if (!isLoggedIn) {
-      localStorage.setItem("redirectAfterLogin", "/booking");
-      window.location.href = "/login";
+  const navigate = useNavigate();
+
+  const handleBookNow = async (service: CatalogService) => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      toast.error("Could not verify your sign-in", { description: error.message });
       return;
     }
-    window.location.href = "/booking";
+    if (!user) {
+      localStorage.setItem("pending_booking_service", JSON.stringify(service));
+      navigate(`/login?redirect=${encodeURIComponent("/booking")}&service=${encodeURIComponent(service.id)}`);
+      toast.error("Please log in to book");
+      return;
+    }
+    navigate(`/booking?service=${encodeURIComponent(service.id)}`);
   };
 
   return (
@@ -53,32 +30,30 @@ const Services = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Professional counseling services to guide you through life's challenges and support your mental wellbeing.
+            Counseling, therapy, and school-based wellbeing programs tailored to individuals, families, and learning communities.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
-            <Card
-              key={index}
-              className="group flex flex-col rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/50"
-            >
-              <CardHeader>
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent transition-transform duration-300 group-hover:scale-110">
-                  <service.icon className="h-7 w-7 text-primary" aria-hidden="true" />
-                </div>
-                <CardTitle className="text-xl">{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col">
-                <CardDescription className="flex-1 text-base text-muted-foreground">
-                  {service.description}
-                </CardDescription>
-                <Button onClick={handleBookSession} className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Book Now
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+        <ServiceDirectory onBook={handleBookNow} />
+        <div className="mt-6 px-4 sm:px-0">
+          <Card
+            id="free-online-coaching"
+            className="mx-auto flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-2 border-teal-500/30 bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-lg"
+          >
+            <CardHeader className="p-0">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent transition-transform duration-300 group-hover:scale-110">
+                <span className="text-2xl" aria-hidden="true">🎥</span>
+              </div>
+              <CardTitle className="text-xl">Online Coaching</CardTitle>
+              <CardDescription>One-to-one coaching online, free to reserve.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5 p-0 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-2xl font-bold text-primary">FREE</p>
+              <Button onClick={() => { window.location.href = "/services#free-online-coaching"; }} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Reserve Free Spot
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

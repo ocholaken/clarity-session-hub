@@ -31,6 +31,7 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminCounselors from "./pages/admin/AdminCounselors";
 import ClarityAIChatbot from "./components/ClarityAIChatbot";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import { useAnonymousTracking } from "./hooks/useAnonymousTracking";
@@ -61,11 +62,10 @@ const AppShell = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/sessions/saturday" element={<SaturdaySessions />} />
 
-        {/* Admin area — not linked from the public site */}
         <Route path="/admin/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/dashboard" element={<Admin />} />
         <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/dashboard" element={<Admin />} />
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="appointments" element={<AdminAppointments />} />
             <Route path="users" element={<AdminUsers />} />
@@ -73,6 +73,7 @@ const AppShell = () => {
             <Route path="messages" element={<AdminMessages />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="counselors" element={<AdminCounselors />} />
           </Route>
         </Route>
 
