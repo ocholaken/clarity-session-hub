@@ -1,11 +1,11 @@
-export const handleBookSession = () => {
-  const isLoggedIn = sessionStorage.getItem("user") || sessionStorage.getItem("token") || false;
+import { supabase } from "@/integrations/supabase/client";
 
-  if (!isLoggedIn) {
+export const handleBookSession = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
     sessionStorage.setItem("redirectAfterLogin", "/booking");
     window.location.href = "/login";
     return;
   }
-
   window.location.href = "/booking";
 };

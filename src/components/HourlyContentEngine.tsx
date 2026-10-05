@@ -111,7 +111,7 @@ const HourlyContentEngine = () => {
     return ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100;
   }, [remaining]);
 
-  if (!content) return <div className="h-[520px] animate-pulse rounded-3xl bg-secondary/60" aria-label="Loading hourly content" />;
+  if (!content) return <div className="flex min-h-20 items-center justify-center rounded-3xl bg-secondary/60 p-6 text-sm text-muted-foreground" role="status">Loading the latest guidance...</div>;
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#F8F7F3] via-white to-[#E7EFEC] px-4 py-8 sm:px-8 sm:py-10 lg:px-10">

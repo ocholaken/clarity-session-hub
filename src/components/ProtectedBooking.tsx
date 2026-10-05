@@ -13,8 +13,8 @@ const ProtectedBooking = ({ children }: ProtectedBookingProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setIsLoggedIn(Boolean(data.user));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(Boolean(session));
       setChecking(false);
     });
   }, []);

@@ -1,24 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ServiceDirectory from "@/components/ServiceDirectory";
 import type { CatalogService } from "@/lib/service-catalog";
+import { handleBookSession } from "@/lib/booking";
 
 const Services = () => {
   const navigate = useNavigate();
 
   const handleBookNow = async (service: CatalogService) => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) {
-      toast.error("Could not verify your sign-in", { description: error.message });
-      return;
-    }
-    if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       localStorage.setItem("pending_booking_service", JSON.stringify(service));
-      navigate(`/login?redirect=${encodeURIComponent("/booking")}&service=${encodeURIComponent(service.id)}`);
-      toast.error("Please log in to book");
+      sessionStorage.setItem("redirectAfterLogin", "/booking");
+      window.location.href = "/login";
       return;
     }
     navigate(`/booking?service=${encodeURIComponent(service.id)}`);
@@ -49,7 +45,7 @@ const Services = () => {
             </CardHeader>
             <CardContent className="flex flex-col gap-5 p-0 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-2xl font-bold text-primary">FREE</p>
-              <Button onClick={() => { window.location.href = "/services#free-online-coaching"; }} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button onClick={() => void handleBookSession()} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Reserve Free Spot
               </Button>
             </CardContent>

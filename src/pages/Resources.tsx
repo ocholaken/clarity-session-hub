@@ -15,6 +15,7 @@ import {
   Leaf,
   Lightbulb,
   PlayCircle,
+  Search,
   ShieldCheck,
   Sparkles,
   Users,
@@ -192,6 +193,7 @@ const tabs = [
 
 const Resources = () => {
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedResource = searchParams.get("resource");
   const [guide, setGuide] = useState<DailyGuide | null>(null);
@@ -243,18 +245,17 @@ const Resources = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-grow">
-        <section className="relative overflow-hidden border-b border-border bg-background py-16 md:py-24">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-secondary/60" aria-hidden="true" />
-          <div className="container relative">
+      <main className="w-full max-w-full overflow-x-hidden flex-grow">
+        <section className="mx-3 md:mx-0 max-w-full overflow-hidden rounded-[20px] bg-[#F6F9F7] p-5 md:p-10 min-h-0 h-auto">
+          <div className="relative w-full max-w-full">
             <div className="max-w-3xl">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C9A227]/40 bg-[#F5EED2]/70 px-4 py-2 text-sm font-semibold text-primary">
                 <Lightbulb className="h-4 w-4 text-[#C9A227]" aria-hidden="true" />
                 Clarity Session Hub resource library
               </div>
-              <h1 className="max-w-2xl text-3xl font-bold leading-tight text-primary sm:text-4xl md:text-5xl">Practical guidance for everyday wellbeing</h1>
+              <h1 className="max-w-2xl text-[26px] leading-[30px] md:text-[36px] md:leading-[40px] font-bold text-[#1a3c34] break-words">Practical guidance for everyday wellbeing</h1>
               <p className="mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8 md:text-xl">Explore clear, compassionate resources on stress, relationships, emotional wellbeing, life changes, and supporting young people.</p>
               <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#6F9085]" />Written for easy reading</span>
@@ -277,11 +278,22 @@ const Resources = () => {
                 <div className="max-w-4xl whitespace-pre-line text-sm leading-7 text-white/90 md:text-base">{guide.content}</div>
               </article>
             )}
+            <div className="mt-5 w-full relative max-w-full">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <input
+                type="search"
+                aria-label="Search resources"
+                placeholder="Search resources"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="w-full h-[52px] text-[16px] rounded-full pl-11 pr-4 border bg-white max-w-full box-border"
+              />
+            </div>
             <Tabs defaultValue="all" className="w-full">
-              <div className="mb-10 flex overflow-x-auto pb-2">
+              <div className="mt-4 flex w-full max-w-full gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1 snap-x snap-mandatory">
                 <TabsList className="h-auto min-w-max gap-1 bg-secondary p-1">
                   {tabs.map(({ value, label, icon: Icon }) => (
-                    <TabsTrigger key={value} value={value} className="gap-2 px-4 py-2.5 text-primary data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    <TabsTrigger key={value} value={value} className="shrink-0 snap-start whitespace-nowrap rounded-full px-4 py-2 text-[13px] gap-2 text-primary data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
                       <Icon className="h-4 w-4" aria-hidden="true" />{label}
                     </TabsTrigger>
                   ))}
@@ -289,7 +301,11 @@ const Resources = () => {
               </div>
 
               {tabs.map(({ value }) => {
-                const visibleResources = allResources.filter((resource) => value === "all" || resource.kind === value);
+                const query = searchQuery.trim().toLocaleLowerCase();
+                const visibleResources = allResources.filter((resource) =>
+                  (value === "all" || resource.kind === value) &&
+                  (!query || `${resource.title} ${resource.topic} ${resource.description}`.toLocaleLowerCase().includes(query)),
+                );
                 return (
                   <TabsContent key={value} value={value} className="mt-0">
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

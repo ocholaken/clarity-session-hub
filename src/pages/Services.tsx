@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { handleBookSession } from "@/lib/booking";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
@@ -40,33 +41,14 @@ const Services = () => {
   }, [searchParams, setSearchParams]);
 
   const handleBookNow = async (service: CatalogService) => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) {
-      toast.error("Could not verify your sign-in", { description: error.message });
-      return;
-    }
-    if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       localStorage.setItem("pending_booking_service", JSON.stringify(service));
-      navigate(`/login?redirect=${encodeURIComponent("/booking")}&service=${encodeURIComponent(service.id)}`);
-      toast.error("Please log in to book");
+      sessionStorage.setItem("redirectAfterLogin", "/booking");
+      window.location.href = "/login";
       return;
     }
     navigate(`/booking?service=${encodeURIComponent(service.id)}`);
-  };
-
-  const handleReserveFreeSpot = async () => {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) {
-      toast.error("Could not verify your sign-in", { description: error.message });
-      return;
-    }
-    if (!user) {
-      localStorage.setItem("pending_booking_service", JSON.stringify({ id: "free-online-coaching" }));
-      navigate(`/login?redirect=${encodeURIComponent("/services")}&service=free-online-coaching`);
-      toast.error("Please log in to reserve your free spot");
-      return;
-    }
-    setEnrollOpen(true);
   };
 
   const handleEnroll = async (event: FormEvent<HTMLFormElement>) => {
@@ -77,15 +59,11 @@ const Services = () => {
     }
     setEnrolling(true);
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        toast.error("Could not verify your sign-in", { description: authError.message });
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
-        localStorage.setItem("pending_booking_service", JSON.stringify({ id: "free-online-coaching" }));
-        navigate(`/login?redirect=${encodeURIComponent("/services")}&service=free-online-coaching`);
-        toast.error("Please log in to reserve your free spot");
+        sessionStorage.setItem("redirectAfterLogin", "/booking");
+        window.location.href = "/login";
         return;
       }
       const nextSaturday = new Date();
@@ -184,7 +162,7 @@ const Services = () => {
                   </ul>
                   <p className="mb-4 text-2xl font-bold text-primary">FREE</p>
                   <div className="mt-6">
-                    <Button variant="default" size="lg" className="w-full py-3 active:scale-95" onClick={() => void handleReserveFreeSpot()}>Reserve Free Spot</Button>
+                    <Button variant="default" size="lg" className="w-full py-3 active:scale-95" onClick={() => void handleBookSession()}>Reserve Free Spot</Button>
                     <p className="mt-2 text-center text-xs text-muted-foreground">No payment required</p>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,9 +29,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectPath = searchParams.get("redirect") ?? sessionStorage.getItem("redirectAfterLogin");
+  const redirectPath = sessionStorage.getItem("redirectAfterLogin") ?? searchParams.get("redirect");
   const pendingServiceId = searchParams.get("service");
   const wasRedirected = Boolean(redirectPath);
   const wasResourceRedirected = redirectPath?.startsWith("/resources") ?? false;
@@ -96,7 +95,7 @@ const Login = () => {
     sessionStorage.removeItem("redirectAfterLogin");
     localStorage.removeItem("pending_booking_service");
     toast.success("Login successful!", { description: "Welcome back to Clarity Sessions!" });
-    navigate(targetPath);
+    window.location.href = targetPath;
   };
 
   return (

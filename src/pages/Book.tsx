@@ -103,16 +103,13 @@ const Book = () => {
       setServiceId(requestedService);
     }
 
-    supabase.auth.getUser().then(({ data, error }) => {
-      if (error) {
-        toast.error("Could not verify your sign-in", { description: error.message });
-        return;
-      }
-      const u = data.user;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user ?? null;
       setUser(u);
       if (!u) {
         const returnTo = `${location.pathname}${location.search}`;
-        navigate(`/login?redirect=${encodeURIComponent(returnTo)}`, { replace: true });
+        sessionStorage.setItem("redirectAfterLogin", returnTo);
+        window.location.href = "/login";
         return;
       }
       setForm((f) => ({
@@ -202,16 +199,12 @@ const Book = () => {
       return;
     }
 
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-    if (authError) {
-      setSubmitting(false);
-      toast.error("Could not verify your sign-in", { description: authError.message });
-      return;
-    }
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUser = session?.user;
     if (!currentUser) {
       setSubmitting(false);
-      toast.error("Please sign in to complete your booking");
-      navigate(`/login?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+      sessionStorage.setItem("redirectAfterLogin", `${location.pathname}${location.search}`);
+      window.location.href = "/login";
       return;
     }
 

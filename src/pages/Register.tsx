@@ -79,6 +79,14 @@ const Register = () => {
     toast.success("Account created", {
       description: "You can now sign in to your account.",
     });
+    if (authData.session) {
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/";
+      sessionStorage.removeItem("redirectAfterLogin");
+      window.location.href = redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+        ? redirectPath
+        : "/";
+      return;
+    }
     navigate(`/login${location.search}`);
   };
 
