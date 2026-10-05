@@ -46,8 +46,22 @@ type Resource = {
   description: string;
   length: string;
   icon: ResourceIcon;
+  video_url?: string | null;
   sections?: { heading: string; text: string }[];
 };
+
+type VideoResourceRow = {
+  id: string;
+  title: string;
+  category: string | null;
+  description: string | null;
+  video_url: string | null;
+};
+
+function getYoutubeId(url: string | null | undefined): string | null {
+  const m = url?.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
 
 const guide = (topic: string, practicalAdvice: string, takeaway: string) => [
   {
@@ -167,23 +181,6 @@ const resources: Resource[] = [
   },
 ];
 
-const videos: Resource[] = [
-  ["anxiety-video", "Understanding Anxiety and Stress", "Mental health", "A planned educational session explaining common stress responses and supportive first steps."],
-  ["wellness-video", "Practical Techniques for Emotional Wellness", "Wellbeing", "A planned demonstration of grounding, reflection, and routine-building techniques."],
-  ["coping-video", "Building Healthy Coping Strategies", "Life transitions", "A planned educational session on coping strategies that support recovery and flexibility."],
-  ["adolescent-video", "Supporting Adolescent Mental Wellbeing", "Family wellbeing", "A planned conversation for caregivers about listening and connecting young people with support."],
-  ["support-video", "When to Consider Professional Support", "Mental health", "A planned overview of signs that additional support could be helpful."],
-].map(([id, title, topic, description]) => ({
-  id,
-  title,
-  topic,
-  description,
-  kind: "Video" as const,
-  length: "Video resource",
-  icon: PlayCircle,
-}));
-
-const allResources = [...resources, ...videos];
 const tabs = [
   { value: "all", label: "All resources", icon: BookOpen },
   { value: "Guide", label: "Professional guides", icon: ShieldCheck },
@@ -194,10 +191,45 @@ const tabs = [
 const Resources = () => {
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [videoResources, setVideoResources] = useState<Resource[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedResource = searchParams.get("resource");
   const [guide, setGuide] = useState<DailyGuide | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
+  const allResources = [...resources, ...videoResources];
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data, error } = await supabase
+        .from("resources" as "content_items")
+        .select("*")
+        .order("created_at");
+
+      if (error) {
+        console.error("Failed to load video resources:", error);
+        return;
+      }
+
+      const rows = (data ?? []) as unknown as VideoResourceRow[];
+      setVideoResources(
+        rows
+          .filter((resource) => getYoutubeId(resource.video_url))
+          .map((resource) => ({
+            id: resource.id,
+            title: resource.title,
+            kind: "Video",
+            topic: resource.category ?? "Video resource",
+            description: resource.description ?? "",
+            length: "Video resource",
+            icon: PlayCircle,
+            video_url: resource.video_url,
+          })),
+      );
+    };
+
+    fetchResources();
+  }, []);
 
   useEffect(() => {
     const fetchGuide = async () => {
@@ -224,10 +256,10 @@ const Resources = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedResource && allResources.some((resource) => resource.id === selectedResource)) {
+    if (selectedResource && (resources.some((resource) => resource.id === selectedResource) || videoResources.some((resource) => resource.id === selectedResource))) {
       setExpandedResource(selectedResource);
     }
-  }, [selectedResource]);
+  }, [selectedResource, videoResources]);
 
   const handleResourceClick = (resourceId: string) => {
     if (expandedResource === resourceId) {
@@ -315,7 +347,18 @@ const Resources = () => {
                         const isVideo = resource.kind === "Video";
                         return (
                           <Card key={resource.id} className="group flex h-full flex-col overflow-hidden border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-[#6F9085]/60 hover:shadow-lg">
-                            {isVideo && <div className="relative flex h-40 items-center justify-center overflow-hidden bg-primary"><div className="absolute inset-0 bg-gradient-to-br from-[#174A4A] via-[#174A4A] to-[#6F9085]/70" /><div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-[#C9A227]/60 bg-[#103838]/70 text-[#C9A227] shadow-lg"><PlayCircle className="h-8 w-8" aria-hidden="true" /></div><span className="absolute bottom-3 left-4 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">Video Resource</span></div>}
+                            {isVideo && (() => {
+                              const youtubeId = getYoutubeId(resource.video_url);
+                              return (
+                                <div className="relative flex h-40 items-center justify-center overflow-hidden bg-primary">
+                                  {youtubeId && <img src={`https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+                                  <div className="absolute inset-0 bg-black/20" />
+                                  <span className="absolute left-4 top-3 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">Video Resource</span>
+                                  <span className="absolute right-4 top-3 rounded-full bg-[#C9A227] px-3 py-1 text-xs font-semibold text-[#1a3c34]">{resource.topic}</span>
+                                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-[#C9A227] bg-[#C9A227] text-[#103838] shadow-lg"><PlayCircle className="h-8 w-8" aria-hidden="true" /></div>
+                                </div>
+                              );
+                            })()}
                             <CardHeader className="min-w-0 p-5 pb-3 sm:p-6 sm:pb-3">
                               <div className="mb-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between"><span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary"><ResourceIcon className="h-3.5 w-3.5" aria-hidden="true" />{resource.kind}</span><span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5" aria-hidden="true" />{resource.length}</span></div>
                               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#6F9085]">{resource.topic}</p>
@@ -323,11 +366,12 @@ const Resources = () => {
                             </CardHeader>
                             <CardContent className="flex flex-1 flex-col p-5 pt-0 sm:p-6 sm:pt-0">
                               <p className="min-w-0 flex-1 break-words leading-7 text-muted-foreground">{resource.description}</p>
-                              {isVideo && isExpanded && <div className="mt-5 rounded-lg border border-[#C9A227]/40 bg-[#F5EED2]/50 p-4 text-sm leading-6 text-primary">This video resource is being prepared. It will be available here when a reviewed video is added.</div>}
                               {isExpanded && resource.sections && <div className="mt-5 space-y-4 border-t border-border pt-5">{resource.sections.map((section) => <div key={section.heading}><h3 className="mb-1 text-sm font-semibold text-primary">{section.heading}</h3><p className="break-words text-sm leading-6 text-muted-foreground">{section.text}</p></div>)}</div>}
                               <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                {isVideo ? <Button variant="outline" onClick={() => handleResourceClick(resource.id)} className="w-full border-primary text-primary hover:bg-secondary sm:w-auto"><PlayCircle className="h-4 w-4" aria-hidden="true" />{isExpanded ? "Close Resource" : "Watch Video"}</Button> : <Button variant="outline" onClick={() => handleResourceClick(resource.id)} className="w-full border-primary text-primary hover:bg-secondary sm:w-auto">{isExpanded ? "Close Resource" : resource.kind === "Guide" ? "Read Guide" : "Read Article"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>}
-                                {isVideo && <span className="text-xs font-medium text-muted-foreground">Coming soon</span>}
+                                {isVideo ? <Button variant="outline" onClick={() => {
+                                  const youtubeId = getYoutubeId(resource.video_url);
+                                  if (youtubeId) setSelectedVideo(youtubeId);
+                                }} className="min-h-[44px] w-full border-primary text-primary hover:bg-secondary sm:w-auto"><PlayCircle className="h-4 w-4" aria-hidden="true" />Watch Video</Button> : <Button variant="outline" onClick={() => handleResourceClick(resource.id)} className="w-full border-primary text-primary hover:bg-secondary sm:w-auto">{isExpanded ? "Close Resource" : resource.kind === "Guide" ? "Read Guide" : "Read Article"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>}
                               </div>
                             </CardContent>
                           </Card>
@@ -344,6 +388,33 @@ const Resources = () => {
         </section>
       </main>
       <Footer />
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div
+            className="relative aspect-video w-full max-w-3xl overflow-hidden rounded-2xl bg-black"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <iframe
+              src={`https://www.youtube.com/embed/${selectedVideo}?autoplay=1`}
+              title="Video resource"
+              className="h-full w-full"
+              allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+            />
+            <button
+              type="button"
+              aria-label="Close video"
+              onClick={() => setSelectedVideo(null)}
+              className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-2xl text-white"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
