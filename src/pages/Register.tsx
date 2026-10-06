@@ -63,6 +63,12 @@ const Register = () => {
       toast.error("Registration failed", { description: error.message });
       return;
     }
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      toast.error("Could not complete registration", { description: signOutError.message });
+      setIsLoading(false);
+      return;
+    }
     if (authData.user) {
       const { error: profileError } = await supabase.from("profiles").upsert({
         id: authData.user.id,
@@ -76,18 +82,7 @@ const Register = () => {
         return;
       }
     }
-    toast.success("Account created", {
-      description: "You can now sign in to your account.",
-    });
-    if (authData.session) {
-      const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/";
-      sessionStorage.removeItem("redirectAfterLogin");
-      window.location.href = redirectPath.startsWith("/") && !redirectPath.startsWith("//")
-        ? redirectPath
-        : "/";
-      return;
-    }
-    navigate(`/login${location.search}`);
+    navigate(`/login${location.search}`, { state: { accountCreated: true } });
   };
 
   return (

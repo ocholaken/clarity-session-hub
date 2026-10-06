@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,11 +29,20 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectPath = sessionStorage.getItem("redirectAfterLogin") ?? searchParams.get("redirect");
   const pendingServiceId = searchParams.get("service");
   const wasRedirected = Boolean(redirectPath);
   const wasResourceRedirected = redirectPath?.startsWith("/resources") ?? false;
+
+  useEffect(() => {
+    if (location.state?.accountCreated) {
+      toast.success("Account created successfully! Please sign in to continue.");
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    }
+  }, [location.pathname, location.search, location.state, navigate]);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
