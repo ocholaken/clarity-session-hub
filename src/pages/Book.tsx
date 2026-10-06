@@ -208,7 +208,7 @@ const Book = () => {
       return;
     }
 
-    const { data: payment, error: paymentError } = await supabase.functions.invoke("mpesa-stk", {
+    const { data: payment, error: paymentError } = await supabase.functions.invoke("mpesa-stk-push", {
       body: { phone, amount: selectedService.price },
     });
     if (paymentError || !payment?.success) {

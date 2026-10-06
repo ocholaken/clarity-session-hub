@@ -12,6 +12,7 @@ import sarahImage from "../../Sarah Akoth.jpg";
 import anneImage from "../../counselor1.jpg.jpeg";
 import bellaImage from "../ballalind.jpeg";
 import paulineImage from "../../Pauline Oyuga.jpg";
+import ruthImage from "../RUTH ACHIENG.jpeg";
 
 const counselors = [
   // {
@@ -85,6 +86,13 @@ const counselors = [
     rating: 4.9,
     reviews: 49,
     availabilityMessage: "Available this week"
+  },
+  {
+    name: "Ruth Achieng",
+    title: "Licensed Counseling Psychologist",
+    image: ruthImage,
+    specialties: ["Individual Counseling", "Substance Use & Addiction Counseling", "Medication Adherence Counseling"],
+    description: "Ruth Achieng is a licensed counseling psychologist who provides individual counseling, support for substance use and addiction, and guidance with medication adherence."
   }
 ];
 
@@ -102,7 +110,10 @@ const specialtyOptions = [
   "Legal Advisory",
   "Child Development",
   "Grief & Loss",
-  "PTSD"
+  "PTSD",
+  "Individual Counseling",
+  "Substance Use & Addiction Counseling",
+  "Medication Adherence Counseling"
 ];
 
 const CounselorsPage = () => {
@@ -176,12 +187,14 @@ const CounselorsPage = () => {
                     <CardHeader className="p-0">
                       <CardTitle className="text-xl">{counselor.name}</CardTitle>
                       <CardDescription className="text-muted-foreground">{counselor.title}</CardDescription>
-                      <div className="flex items-center mt-2 text-amber-500">
-                        <Star className="fill-current h-4 w-4" />
-                        <span className="ml-1 text-sm font-medium">{counselor.rating}</span>
-                        <span className="mx-1 text-gray-400">•</span>
-                        <span className="text-sm text-gray-500">{counselor.reviews} reviews</span>
-                      </div>
+                      {counselor.rating !== undefined && counselor.reviews !== undefined && (
+                        <div className="flex items-center mt-2 text-amber-500">
+                          <Star className="fill-current h-4 w-4" />
+                          <span className="ml-1 text-sm font-medium">{counselor.rating}</span>
+                          <span className="mx-1 text-gray-400">•</span>
+                          <span className="text-sm text-gray-500">{counselor.reviews} reviews</span>
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent className="p-0 pt-4">
                       <div className="flex gap-2 flex-wrap mb-4">
@@ -193,9 +206,11 @@ const CounselorsPage = () => {
                       </div>
                       <p className="text-muted-foreground mb-4">{counselor.description}</p>
                       <div className="space-y-2 text-sm">
-                        <p><span className="font-medium">Education:</span> {counselor.education}</p>
-                        <p><span className="font-medium">Experience:</span> {counselor.experience}</p>
-                        <p className="text-green-600 font-medium mt-4">{counselor.availabilityMessage}</p>
+                        {counselor.education && <p><span className="font-medium">Education:</span> {counselor.education}</p>}
+                        {counselor.experience && <p><span className="font-medium">Experience:</span> {counselor.experience}</p>}
+                        {counselor.availabilityMessage && (
+                          <p className="text-green-600 font-medium mt-4">{counselor.availabilityMessage}</p>
+                        )}
                       </div>
                     </CardContent>
                     <CardFooter className="mt-auto flex flex-col sm:flex-row gap-2 md:gap-3 pt-4 px-0 pb-0">

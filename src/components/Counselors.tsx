@@ -7,6 +7,7 @@ import { BadgeCheck, Globe, Banknote, CalendarCheck } from "lucide-react";
 import sarahImage from "../../Sarah Akoth.jpg";
 import paulineImage from "../../Pauline Oyuga.jpg";
 import anneImage from "../../counselor1.jpg.jpeg";
+import ruthImage from "../RUTH ACHIENG.jpeg";
 
 const counselors = [
   {
@@ -38,6 +39,13 @@ const counselors = [
     languages: "English, Swahili",
     price: "KSh 3,500 / session",
     availability: "Mon – Sat",
+  },
+  {
+    name: "Ruth Achieng",
+    title: "Licensed Counseling Psychologist",
+    image: ruthImage,
+    specialties: ["Individual Counseling", "Substance Use & Addiction Counseling", "Medication Adherence Counseling"],
+    description: "Ruth Achieng is a licensed counseling psychologist who provides individual counseling, support for substance use and addiction, and guidance with medication adherence.",
   },
 ];
 
@@ -81,18 +89,24 @@ const Counselors = () => {
                 </div>
                 <p className="text-muted-foreground mb-4">{counselor.description}</p>
                 <dl className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
-                    <dd>{counselor.languages}</dd>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Banknote className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
-                    <dd>{counselor.price}</dd>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CalendarCheck className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
-                    <dd>{counselor.availability}</dd>
-                  </div>
+                  {counselor.languages && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                      <dd>{counselor.languages}</dd>
+                    </div>
+                  )}
+                  {counselor.price && (
+                    <div className="flex items-center gap-2">
+                      <Banknote className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                      <dd>{counselor.price}</dd>
+                    </div>
+                  )}
+                  {counselor.availability && (
+                    <div className="flex items-center gap-2">
+                      <CalendarCheck className="h-4 w-4 text-primary shrink-0" aria-hidden="true" />
+                      <dd>{counselor.availability}</dd>
+                    </div>
+                  )}
                 </dl>
               </CardContent>
               <CardFooter>
