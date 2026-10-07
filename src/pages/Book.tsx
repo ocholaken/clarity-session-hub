@@ -63,16 +63,14 @@ const formatDateForDB = (value: Date | string | null | undefined) => {
   return new Date(value).toISOString().split("T")[0];
 };
 
-const normalizeMpesaPhone = (value: string) => {
-  const phone = value.replace(/\s+/g, "");
-  if (/^07\d{8}$/.test(phone)) return `254${phone.slice(1)}`;
-  if (/^01\d{8}$/.test(phone)) return `254${phone.slice(1)}`;
-  if (/^2547\d{8}$/.test(phone)) return phone;
-  if (/^2541\d{8}$/.test(phone)) return phone;
-  if (/^\+2547\d{8}$/.test(phone)) return phone.slice(1);
-  if (/^\+2541\d{8}$/.test(phone)) return phone.slice(1);
-  return null;
+const formatPhone = (value: string) => {
+  const phone = value.toString().trim().replace(/\s/g, "").replace(/-/g, "").replace(/\+/g, "");
+  if (phone.startsWith("0")) return `254${phone.slice(1)}`;
+  if (phone.startsWith("7") || phone.startsWith("1")) return `254${phone}`;
+  return phone;
 };
+
+const isValidMpesaPhone = (phone: string) => /^254(7\d{8}|1\d{8})$/.test(phone);
 
 const Book = () => {
   const navigate = useNavigate();
@@ -171,9 +169,10 @@ const Book = () => {
     if (isSchoolService && (!Number.isInteger(Number(schoolDetails.studentCount)) || Number(schoolDetails.studentCount) < 1)) {
       return toast.error("Enter the number of students");
     }
-    if (!form.phone.trim() || form.phone.trim().length < 10) return toast.error("Phone required");
-    if (!/^07[0-9]{8}$/.test(form.phone.trim())) return toast.error("Enter a phone number in the format 07XXXXXXXX");
-    if (!normalizeMpesaPhone(form.phone.trim())) return toast.error("Enter a valid M-Pesa number, for example 07XXXXXXXX");
+    if (!form.phone.trim()) return toast.error("Phone required");
+    if (!isValidMpesaPhone(formatPhone(form.phone))) {
+      return toast.error("Enter valid Safaricom number: 07... or 01...");
+    }
     setStep("confirm");
   };
 
@@ -182,6 +181,7 @@ const Book = () => {
     setSubmitting(true);
 
     const selectedService = service;
+    const amount = selectedService.price ?? 3000;
     const selectedDate = date ? formatLocalDate(date) : null;
     const selectedTime = isSchoolService
       ? schoolTime
@@ -192,10 +192,10 @@ const Book = () => {
       return;
     }
 
-    const phone = normalizeMpesaPhone(form.phone.trim());
-    if (!phone) {
+    const phone = formatPhone(form.phone);
+    if (!isValidMpesaPhone(phone)) {
       setSubmitting(false);
-      toast.error("Enter a valid M-Pesa number");
+      toast.error("Enter valid Safaricom number: 07... or 01...");
       return;
     }
 
@@ -208,12 +208,50 @@ const Book = () => {
       return;
     }
 
-    const { data: payment, error: paymentError } = await supabase.functions.invoke("mpesa-stk-push", {
-      body: { phone, amount: selectedService.price },
+    const { data: payment, error: paymentError } = await supabase.functions.invoke("mpesa-stk", {
+      body: {
+        phone,
+        amount,
+        account_ref: "CLARITY",
+        email: form.email.trim(),
+      },
+      headers: { "Content-Type": "application/json" },
     });
-    if (paymentError || !payment?.success) {
+    if (paymentError) {
+      const context = paymentError.context;
+      let errorMessage = paymentError.message;
+      if (context instanceof Response) {
+        const responseBody = await context.clone().text();
+        console.error("M-Pesa Edge Function response:", {
+          status: context.status,
+          statusText: context.statusText,
+          headers: Object.fromEntries(context.headers.entries()),
+          body: responseBody,
+        });
+        try {
+          const responseData: unknown = JSON.parse(responseBody);
+          if (responseData && typeof responseData === "object") {
+            if ("error" in responseData && typeof responseData.error === "string") {
+              errorMessage = responseData.error;
+            } else if ("message" in responseData && typeof responseData.message === "string") {
+              errorMessage = responseData.message;
+            }
+          }
+        } catch {
+          errorMessage = responseBody.trim() || paymentError.message;
+        }
+      } else {
+        console.error("M-Pesa Edge Function request failed:", paymentError, context);
+        if (context instanceof Error) errorMessage = context.message;
+      }
       setSubmitting(false);
-      toast.error(payment?.error || paymentError?.message || "Unable to start M-Pesa payment");
+      toast.error(errorMessage);
+      return;
+    }
+    console.info("M-Pesa Edge Function response:", payment);
+    if (!payment?.success) {
+      setSubmitting(false);
+      toast.error(payment?.error || "Unable to start M-Pesa payment");
       return;
     }
 
@@ -234,7 +272,7 @@ const Book = () => {
       service_id: selectedService.id,
       booking_date: selectedDate || formatLocalDate(new Date()),
       booking_time: selectedTime || "Full Day",
-      amount_due: selectedService.price,
+      amount_due: amount,
       status: "pending",
     };
     const { error } = await bookingsClient.insert([payload]).select();
@@ -429,8 +467,7 @@ const Book = () => {
                         type="tel"
                         className="text-base"
                         inputMode="tel"
-                        pattern="^07[0-9]{8}$"
-                        placeholder="07XXXXXXXX"
+                        placeholder="07XXXXXXXX or 01XXXXXXXX"
                         required
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
