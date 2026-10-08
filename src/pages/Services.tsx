@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { handleBookSession } from "@/lib/booking";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,7 @@ type FreeReservationPayload = Record<string, unknown>;
 type FreeReservationClient = {
   from: (table: "bookings") => {
     insert: (values: FreeReservationPayload[]) => PromiseLike<{
-      error: { code?: string; message: string } | null;
+      error: { message: string } | null;
     }>;
   };
 };
@@ -62,7 +61,7 @@ const Services = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
       if (!user) {
-        sessionStorage.setItem("redirectAfterLogin", "/booking");
+        sessionStorage.setItem("redirectAfterLogin", "/services?service=free-online-coaching");
         window.location.href = "/login";
         return;
       }
@@ -79,8 +78,8 @@ const Services = () => {
         client_name: registration.name.trim(),
         client_email: user.email ?? "",
         client_phone: registration.phone.trim(),
-        counselor_name: "Online Coaching",
-        service_name: "Online Coaching",
+        counselor_name: "Free Saturday Coaching (30 min) - Free",
+        service_name: "Free Saturday Coaching (30 min) - Free",
         service_category: "online",
         is_free: true,
         booking_date: bookingDate,
@@ -92,17 +91,9 @@ const Services = () => {
         intent: registration.intent.trim() || "Online coaching",
         status: "pending",
       };
-      let { error } = await (supabase as unknown as FreeReservationClient)
+      const { error } = await (supabase as unknown as FreeReservationClient)
         .from("bookings")
         .insert([booking]);
-
-      if (error && ["42703", "PGRST204"].includes(error.code) && /price/i.test(error.message)) {
-        const bookingWithoutPrice = { ...booking };
-        delete bookingWithoutPrice.price;
-        ({ error } = await (supabase as unknown as FreeReservationClient)
-          .from("bookings")
-          .insert([bookingWithoutPrice]));
-      }
 
       if (error) {
         console.error("Online coaching reservation failed", error);
@@ -112,7 +103,7 @@ const Services = () => {
 
       setEnrollOpen(false);
       setRegistration({ name: "", phone: "", intent: "" });
-      const result = { success: true, message: "Free spot reserved!" };
+      const result = { success: true, message: "Free Saturday coaching spot reserved!" };
       toast.success(result.message);
       return result;
     } catch (error) {
@@ -153,7 +144,7 @@ const Services = () => {
                       ONLINE COACHING
                     </Badge>
                   </div>
-                  <h3 className="mb-2 text-2xl font-semibold text-foreground">Online Coaching</h3>
+                  <h3 className="mb-2 text-2xl font-semibold text-foreground">Free Saturday Coaching (30 min)</h3>
                   <p className="mb-4 text-muted-foreground">One-to-one online coaching to help you build clarity, confidence, and momentum.</p>
                   <ul className="mb-5 list-disc space-y-1 pl-5 text-sm text-foreground">
                     <li>Personalized online session</li>
@@ -162,7 +153,7 @@ const Services = () => {
                   </ul>
                   <p className="mb-4 text-2xl font-bold text-primary">FREE</p>
                   <div className="mt-6">
-                    <Button variant="default" size="lg" className="w-full py-3 active:scale-95" onClick={() => void handleBookSession()}>Reserve Free Spot</Button>
+                    <Button variant="default" size="lg" className="w-full py-3 active:scale-95" onClick={() => setEnrollOpen(true)}>Reserve Free Spot</Button>
                     <p className="mt-2 text-center text-xs text-muted-foreground">No payment required</p>
                   </div>
                 </div>
@@ -182,8 +173,8 @@ const Services = () => {
       <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
         <DialogContent className="fixed inset-x-0 bottom-0 top-auto max-h-[90dvh] translate-x-0 translate-y-0 overflow-y-auto rounded-t-2xl p-4 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:max-h-[90vh] sm:max-w-lg sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl sm:p-6">
           <DialogHeader>
-            <DialogTitle>Reserve Your Free Online Coaching Spot</DialogTitle>
-            <DialogDescription>Complete your details to reserve a free online coaching session.</DialogDescription>
+            <DialogTitle>Reserve Free Saturday Coaching (30 min)</DialogTitle>
+            <DialogDescription>Complete your details to reserve your free Saturday online coaching session. No payment is required.</DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleEnroll}>
             <div className="space-y-2">

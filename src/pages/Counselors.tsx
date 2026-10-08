@@ -13,6 +13,8 @@ import anneImage from "../../counselor1.jpg.jpeg";
 import bellaImage from "../ballalind.jpeg";
 import paulineImage from "../../Pauline Oyuga.jpg";
 import ruthImage from "../RUTH ACHIENG.jpeg";
+import limbeImage from "../Limbe Goffrey.jpeg";
+import robinsonImage from "../Robinson Omondi.jpg";
 
 const counselors = [
   // {
@@ -93,6 +95,22 @@ const counselors = [
     image: ruthImage,
     specialties: ["Individual Counseling", "Substance Use & Addiction Counseling", "Medication Adherence Counseling"],
     description: "Ruth Achieng is a licensed counseling psychologist who provides individual counseling, support for substance use and addiction, and guidance with medication adherence."
+  },
+  {
+    name: "Limbe Joffrey",
+    title: "Mental Health Advocate & Counselor",
+    image: limbeImage,
+    specialties: ["Trauma Counseling", "Marriage Counseling", "Personal Development Coaching"],
+    description: "Limbe is a mental health advocate and trauma counselor with 15 years of experience in the counseling field. He also works as a part-time counseling lecturer.",
+    experience: "15 years",
+    availabilityMessage: "Contact us for availability"
+  },
+  {
+    name: "Robinson Omondi",
+    title: "Counselor",
+    image: robinsonImage,
+    specialties: ["Wellbeing Support", "Life Challenges", "Personal Growth"],
+    description: "Robinson offers a welcoming space to talk through life’s challenges, gain perspective, and explore practical next steps. His profile can be tailored further as his specific areas of expertise are confirmed."
   }
 ];
 

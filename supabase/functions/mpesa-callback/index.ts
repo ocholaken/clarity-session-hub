@@ -17,13 +17,11 @@ Deno.serve(async (request) => {
 
   try {
     const callback = await request.json();
-    const paybill = Deno.env.get("MPESA_PAYBILL");
+    const paybill = Deno.env.get("MPESA_SHORTCODE") || Deno.env.get("MPESA_PAYBILL");
     const account = Deno.env.get("MPESA_ACCOUNT");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (paybill !== "400200" || account !== "1209968") {
-      throw new Error("MPESA_PAYBILL and MPESA_ACCOUNT must be configured for this business");
-    }
+    if (!paybill || !account) throw new Error("Missing M-Pesa shortcode or account configuration");
     if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase configuration");
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
@@ -53,7 +51,7 @@ Deno.serve(async (request) => {
       if (
         payment.reference !== account ||
         storedMetadata?.businessShortCode !== paybill ||
-        storedMetadata.accountReference !== account
+        !storedMetadata.accountReference
       ) {
         return callbackResponse("Stored payment details do not match", 400);
       }
