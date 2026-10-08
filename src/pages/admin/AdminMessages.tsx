@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { Mail, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContactMessage {
+  id: string;
   name: string;
   email: string;
-  subject: string;
+  phone: string | null;
+  subject: string | null;
   message: string;
-  date: string;
+  created_at: string;
 }
 
 const AdminMessages = () => {
@@ -20,13 +23,15 @@ const AdminMessages = () => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/messages");
-      if (!response.ok) throw new Error("Unable to load messages");
-      const data = await response.json() as ContactMessage[];
-      setMessages(data);
+      const { data, error: queryError } = await supabase
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (queryError) throw queryError;
+      setMessages((data ?? []) as ContactMessage[]);
     } catch (loadError) {
       console.error(loadError);
-      setError("Messages could not be loaded. Make sure the development server is running.");
+      setError(`Messages could not be loaded: ${loadError instanceof Error ? loadError.message : "Please try again."}`);
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +63,7 @@ const AdminMessages = () => {
                 <tr>
                   <th className="px-5 py-4 font-semibold">Name</th>
                   <th className="px-5 py-4 font-semibold">Email</th>
+                  <th className="px-5 py-4 font-semibold">Phone</th>
                   <th className="px-5 py-4 font-semibold">Subject</th>
                   <th className="px-5 py-4 font-semibold">Message</th>
                   <th className="px-5 py-4 font-semibold">Date</th>
@@ -65,18 +71,19 @@ const AdminMessages = () => {
               </thead>
               <tbody className="divide-y divide-border">
                 {messages.map((item) => (
-                  <tr key={`${item.date}-${item.email}`} className="align-top transition-colors hover:bg-secondary/50">
+                  <tr key={item.id} className="align-top transition-colors hover:bg-secondary/50">
                     <td className="px-5 py-4 font-semibold text-foreground">{item.name}</td>
                     <td className="px-5 py-4 text-muted-foreground">{item.email}</td>
+                    <td className="px-5 py-4 text-muted-foreground">{item.phone || "—"}</td>
                     <td className="px-5 py-4 font-medium text-foreground">{item.subject}</td>
                     <td className="max-w-[360px] whitespace-pre-line px-5 py-4 leading-6 text-muted-foreground">{item.message}</td>
-                    <td className="whitespace-nowrap px-5 py-4 text-muted-foreground">{new Date(item.date).toLocaleString()}</td>
+                    <td className="whitespace-nowrap px-5 py-4 text-muted-foreground">{new Date(item.created_at).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {!isLoading && messages.length === 0 && <div className="p-12 text-center text-muted-foreground"><Mail className="mx-auto mb-3 h-8 w-8 text-primary/60" /><p>No messages yet.</p></div>}
+          {!isLoading && !error && messages.length === 0 && <div className="p-12 text-center text-muted-foreground"><Mail className="mx-auto mb-3 h-8 w-8 text-primary/60" /><p>No messages yet.</p></div>}
           {isLoading && <div className="p-12 text-center text-muted-foreground">Loading messages...</div>}
         </CardContent>
       </Card>

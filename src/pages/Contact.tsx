@@ -12,24 +12,31 @@ const Contact = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSuccess("");
+    setError("");
     try {
-      const { error } = await supabase.from("contact_messages").insert({
+      const { error: insertError } = await supabase.from("messages").insert({
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone || null,
         subject: formData.subject,
         message: formData.message,
       });
-      if (error) throw error;
+      if (insertError) throw insertError;
       setSuccess("Thank you for messaging Clarity Session Hub! We have received your message and will get back to you soon.");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
-    } catch (err: any) {
-      setSuccess("Error: " + err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error
+        ? err.message
+        : typeof err === "object" && err !== null && "message" in err && typeof err.message === "string"
+          ? err.message
+          : "Please try again.";
+      setError(`Your message could not be sent: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -44,6 +51,11 @@ const Contact = () => {
         {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 max-w-xl">
             {success}
+          </div>
+        )}
+        {error && (
+          <div role="alert" className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 max-w-xl">
+            {error}
           </div>
         )}
 

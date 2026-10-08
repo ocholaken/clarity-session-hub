@@ -205,7 +205,7 @@ const AdminDashboard = () => {
       const [profilesRes, bookingsRes, messagesRes, paymentsRes, aiConversationsRes] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("bookings").select("*").order("created_at", { ascending: false }),
-        (supabase as any).from("contact_messages").select("*").order("created_at", { ascending: false }),
+        supabase.from("messages").select("*").order("created_at", { ascending: false }),
         supabase.from("payments").select("*").order("created_at", { ascending: false }),
         (supabase as any).from("ai_chat_logs").select("*").order("created_at", { ascending: false }).limit(20),
       ]);
@@ -227,13 +227,11 @@ const AdminDashboard = () => {
 
       setBookings(bookingRows);
 
-      setMessages(messageRows.length > 0 ? messageRows : Array.from({ length: 8 }, (_, index) => ({
-        id: `fallback-message-${index + 1}`,
-        name: ["Grace", "Alex", "Baraka", "Ivy", "Peter", "Noel", "Mary", "Kevin"][index],
-        email: `guest${index + 1}@mail.com`,
-        message: "I would like to book a counselling session and learn more about your process.",
-        created_at: new Date(Date.now() - index * 3600000).toISOString(),
-      })));
+      if (messagesRes.error) {
+        console.error("Dashboard messages load failed", messagesRes.error);
+        toast.error(`Could not load contact messages: ${messagesRes.error.message}`);
+      }
+      setMessages(messageRows);
 
       setPayments(paymentRows.length > 0 ? paymentRows : Array.from({ length: 6 }, (_, index) => ({
         id: `fallback-payment-${index + 1}`,
