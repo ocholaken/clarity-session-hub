@@ -35,11 +35,13 @@ import AdminCounselors from "./pages/admin/AdminCounselors";
 import ClarityAIChatbot from "./components/ClarityAIChatbot";
 import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import { useAnonymousTracking } from "./hooks/useAnonymousTracking";
+import { useAutoLogout } from "./hooks/useAutoLogout";
 
 const queryClient = new QueryClient();
 
 const AppShell = () => {
   useAnonymousTracking();
+  useAutoLogout();
 
   return (
     <>
