@@ -49,7 +49,7 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    const { data: authData, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: data.email.trim(),
       password: data.password,
       options: {
@@ -66,21 +66,6 @@ const Register = () => {
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) {
       toast.error("Could not complete registration", { description: signOutError.message });
-      setIsLoading(false);
-      return;
-    }
-    if (authData.user) {
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: authData.user.id,
-        email: data.email.trim(),
-        full_name: data.name.trim(),
-        role: data.email.trim().toLowerCase() === "ocholakenna1@gmail.com" ? "admin" : "user",
-      });
-      if (profileError) {
-        toast.error("Profile setup failed", { description: profileError.message });
-        setIsLoading(false);
-        return;
-      }
     }
     navigate(`/login${location.search}`, { state: { accountCreated: true } });
   };
